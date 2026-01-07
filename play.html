@@ -1,395 +1,410 @@
-<script src="https://cdn.tailwindcss.com"></script>
 <!doctype html>
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Harmony Stack | Stack Play</title>
+    <title>Harmony Stack | Flow Free Chord</title>
+    <title>Chord Flow | Flow Free Chord</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
+            colors: {
+              ink: "#0f172a",
+              surface: "#f8fafc",
+              mission: "#3b82f6"
+            },
             borderRadius: {
               "2xl": "1.25rem"
-            },
-            colors: {
-              ink: "rgb(var(--color-ink) / <alpha-value>)",
-              surface: "rgb(var(--color-surface) / <alpha-value>)",
-              muted: "rgb(var(--color-muted) / <alpha-value>)",
-              accent: "rgb(var(--color-accent) / <alpha-value>)",
-              accentStrong: "rgb(var(--color-accent-strong) / <alpha-value>)",
-              toneA: "rgb(var(--color-tone-a) / <alpha-value>)",
-              toneB: "rgb(var(--color-tone-b) / <alpha-value>)",
-              toneC: "rgb(var(--color-tone-c) / <alpha-value>)"
+              surface: "#0b1120",
+              panel: "#0f172a",
+              grid: "rgba(148, 163, 184, 0.25)"
             }
           }
         }
       };
     </script>
     <style>
-      :root {
-        color-scheme: light;
-        --color-ink: 15 23 42;
-        --color-surface: 248 250 252;
-        --color-muted: 226 232 240;
-        --color-accent: 78 156 255;
-        --color-accent-strong: 37 99 235;
-        --color-tone-a: 96 165 250;
-        --color-tone-b: 248 113 113;
-        --color-tone-c: 250 204 21;
-      }
-
       body {
-        margin: 0;
         font-family: "Pretendard", "Inter", system-ui, sans-serif;
-        background: rgb(var(--color-surface));
-        color: rgb(var(--color-ink));
-        min-height: 100vh;
       }
-
-      .tower-area {
-        position: relative;
-        height: 520px;
-        overflow: hidden;
-        border-radius: 1.25rem;
-        background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
-        border: 1px solid rgb(var(--color-muted));
+      .board {
+        touch-action: none;
+        --pad: 24px;
+        background-color: #0b1120;
+        background-image:
+          linear-gradient(to right, rgba(148, 163, 184, 0.2) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(148, 163, 184, 0.2) 1px, transparent 1px);
+        background-size: calc((100% - (var(--pad) * 2)) / 7) calc((100% - (var(--pad) * 2)) / 7);
+        background-position: var(--pad) var(--pad);
       }
-
-      .block {
-        position: absolute;
-        height: 36px;
-        border-radius: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: white;
-      }
-
-      .shake {
-        animation: shake 0.2s ease-in-out 3;
-      }
-
-      @keyframes shake {
-        0% {
-          transform: translateX(0);
-        }
-        25% {
-          transform: translateX(-6px);
-        }
-        50% {
-          transform: translateX(6px);
-        }
-        75% {
-          transform: translateX(-4px);
-        }
-        100% {
-          transform: translateX(0);
-        }
-      }
-
-      .confetti::before,
-      .confetti::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image: radial-gradient(circle at 10% 20%, #fbbf24 0 6px, transparent 7px),
-          radial-gradient(circle at 80% 30%, #34d399 0 5px, transparent 6px),
-          radial-gradient(circle at 30% 70%, #60a5fa 0 6px, transparent 7px),
-          radial-gradient(circle at 70% 80%, #f472b6 0 5px, transparent 6px);
-        opacity: 0.5;
-        animation: confetti 1.2s ease-in-out infinite;
-      }
-
-      @keyframes confetti {
-        0% {
-          transform: translateY(-10px);
-        }
-        100% {
-          transform: translateY(10px);
-        }
+      .note {
+        transform: translate(-50%, -50%);
       }
     </style>
   </head>
-  <body>
-    <main class="min-h-screen px-6 py-8">
-      <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <header class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p class="text-sm font-semibold text-slate-500">Harmony Stack</p>
-              <h1 class="text-3xl font-bold">Stack Play</h1>
+  <body class="min-h-screen bg-surface text-ink">
+    <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-8">
+      <header class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-md">
+  <body class="min-h-screen bg-slate-950 text-white">
+    <main class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-8">
+      <header class="flex flex-col gap-4 rounded-2xl bg-panel/80 p-4 shadow-lg md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-sm font-semibold text-slate-500">Harmony Stack</p>
+          <h1 class="text-2xl font-bold">Flow Free 스타일 화음 연결</h1>
+          <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Chord Flow</p>
+          <h1 class="text-2xl font-semibold">Flow Free 스타일 음 연결 → 코드 판정</h1>
+        </div>
+        <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+          <p class="text-xs font-semibold text-blue-500">현재 미션</p>
+          <p class="text-sm font-semibold text-blue-600">
+            으뜸화음(I) 도-미-솔 연결
+          </p>
+        <div class="flex flex-wrap items-center gap-3">
+          <label class="flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-sm font-semibold">
+            <span class="text-slate-300">Key</span>
+            <select
+              id="keySelect"
+              class="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-white"
+            ></select>
+          </label>
+          <button
+            id="soundToggle"
+            type="button"
+            class="rounded-full border border-slate-600 px-4 py-2 text-sm font-semibold"
+          >
+            Sound ON
+          </button>
+          <button
+            id="resetButton"
+            type="button"
+            class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+          >
+            Reset
+          </button>
+        </div>
+      </header>
+
+      <section class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <div class="flex flex-col items-center gap-4">
+          <div class="board relative w-full max-w-[520px] rounded-2xl bg-white p-4 shadow-lg">
+            <div class="grid grid-cols-6 gap-3">
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
+              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
             </div>
-            <a
-              href="index.html"
-              class="min-h-[44px] rounded-2xl border border-muted bg-white px-5 py-2 text-sm font-semibold"
+          <div
+            id="board"
+            class="board relative aspect-square w-full max-w-[520px] rounded-3xl border border-white/10 shadow-2xl"
+          >
+            <svg
+              id="lineLayer"
+              class="pointer-events-none absolute inset-0 h-full w-full"
+              viewBox="0 0 520 520"
+              preserveAspectRatio="none"
             >
-              Back to Mode Select
-            </a>
+              <g id="committedLines"></g>
+              <polyline
+                id="flowLine"
+                id="activeLine"
+                fill="none"
+                stroke="#3b82f6"
+                stroke-width="16"
+                stroke="#38bdf8"
+                stroke-width="18"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                points=""
+              ></polyline>
+            </svg>
+            <div
+              id="note-do"
+              data-note="do"
+              class="note absolute flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white shadow-md"
+              style="left: 10%; top: 20%;"
+            >
+              도
+            </div>
+            <div
+              id="note-mi"
+              data-note="mi"
+              class="note absolute flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white shadow-md"
+              style="left: 55%; top: 40%;"
+            >
+              미
+            </div>
+            <div
+              id="note-sol"
+              data-note="sol"
+              class="note absolute flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white shadow-md"
+              style="left: 72%; top: 70%;"
+            >
+              솔
+            </div>
+            <div id="nodesLayer" class="absolute inset-0"></div>
           </div>
-        </header>
+          <div
+            id="banner"
+            class="hidden rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+            class="hidden rounded-full bg-emerald-500/90 px-4 py-2 text-sm font-semibold shadow"
+          ></div>
+        </div>
 
-        <section class="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-          <div class="flex flex-col gap-4">
-            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
-              <div class="flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                  <div class="rounded-2xl bg-slate-50 px-4 py-2 text-sm font-semibold">
-                    Floor <span id="floorCount">1</span>
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <div class="text-xs font-semibold text-slate-500">안정도</div>
-                    <div class="h-3 w-44 overflow-hidden rounded-full bg-muted">
-                      <div
-                        id="stabilityFill"
-                        class="h-full rounded-full bg-accent transition"
-                        style="width: 100%"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex items-center gap-4 text-sm font-semibold text-slate-600">
-                  <div
-                    id="missionText"
-                    class="hidden rounded-full bg-accent/10 px-3 py-1 text-accentStrong"
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="tower-area" id="towerArea">
-              <div
-                id="floatingBlock"
-                class="block bg-accent"
-                style="top: 32px; left: 50%; width: 240px"
-              >
-                ♩
-              </div>
-              <div id="towerBase"></div>
-              <div
-                id="resultBanner"
-                class="pointer-events-none absolute left-1/2 top-6 hidden -translate-x-1/2 rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold text-white"
-              ></div>
-            </div>
-
-            <p id="tapHint" class="text-center text-sm font-semibold text-slate-500">
-              화면을 탭하여 블록을 놓아주세요.
+        <aside class="flex flex-col gap-4">
+          <div class="rounded-2xl bg-white p-5 shadow-md">
+            <h2 class="text-lg font-semibold">미션 진행</h2>
+            <p class="mt-2 text-sm text-slate-500">
+              도 → 미 → 솔 순서로 연결하면 성공합니다.
+            </p>
+            <ul class="mt-4 space-y-2 text-sm text-slate-600">
+              <li>시작: 도</li>
+              <li>다음: 미</li>
+              <li>마지막: 솔</li>
+          <div class="rounded-2xl bg-panel/80 p-4 text-sm text-slate-200 shadow">
+            <h2 class="text-base font-semibold text-white">연결 규칙</h2>
+            <ul class="mt-3 space-y-2 text-sm text-slate-300">
+              <li>드래그 중 다른 노드에 닿으면 스냅됩니다.</li>
+              <li>연결 경로에 3음이 모두 포함되면 화음 판정.</li>
+              <li>화음: I(도-미-솔), IV(파-라-도), V(솔-시-레)</li>
+            </ul>
+          </div>
+          <div class="rounded-2xl bg-white p-5 shadow-md">
+            <h2 class="text-lg font-semibold">조작 안내</h2>
+            <p class="mt-2 text-sm text-slate-500">
+              큰 터치 타겟으로 드래그를 지원합니다.
+          <div class="rounded-2xl bg-panel/80 p-4 text-sm text-slate-200 shadow">
+            <h2 class="text-base font-semibold text-white">터치 최적화</h2>
+            <p class="mt-2 text-sm text-slate-300">
+              모바일 터치에서 부드러운 드래그가 되도록 pointer events와 touch-action을 설정했어요.
             </p>
           </div>
+        </aside>
+      </section>
 
-          <aside class="flex flex-col gap-4">
-            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold">음 패널</h2>
-                <span
-                  id="soundStatus"
-                  class="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-500"
-                >
-                  Sound OFF
-                </span>
-              </div>
-              <div id="toneSelector" class="mt-4 hidden">
-                <p class="text-xs font-semibold text-slate-500">블록 선택</p>
-                <div class="mt-2 grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    class="tone-button min-h-[44px] rounded-xl border border-muted bg-white text-sm font-semibold"
-                    data-tone="A"
-                  >
-                    A
-                  </button>
-                  <button
-                    type="button"
-                    class="tone-button min-h-[44px] rounded-xl border border-muted bg-white text-sm font-semibold"
-                    data-tone="B"
-                  >
-                    B
-                  </button>
-                  <button
-                    type="button"
-                    class="tone-button min-h-[44px] rounded-xl border border-muted bg-white text-sm font-semibold"
-                    data-tone="C"
-                  >
-                    C
-                  </button>
-                </div>
-              </div>
-
-              <div class="mt-4 rounded-2xl bg-slate-50 p-4">
-                <p class="text-xs font-semibold text-slate-500">누적 음</p>
-                <div id="toneHistory" class="mt-3 grid grid-cols-6 gap-2 text-center text-xs"></div>
-              </div>
-            </div>
-
-            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
-              <h3 class="text-lg font-semibold">미션 예시</h3>
-              <ul class="mt-3 space-y-2 text-sm text-slate-600" id="missionExamples"></ul>
-            </div>
-
-            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
-              <h3 class="text-lg font-semibold">설정값</h3>
-              <ul class="mt-3 space-y-2 text-sm text-slate-600" id="settingsList"></ul>
-            </div>
-          </aside>
-        </section>
-      </div>
+      <footer class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-md">
+        <button
+          type="button"
+          id="resetButton"
+          class="min-h-[44px] rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold"
+        >
+          Reset
+        </button>
+        <p class="text-sm font-semibold text-slate-500">Hint: 도에서 시작해 미, 솔로 연결!</p>
+      <footer class="rounded-2xl bg-panel/80 p-4 shadow">
+        <div class="flex flex-wrap items-center justify-between gap-4 text-sm font-semibold text-slate-300">
+          <span>완성 화음 카운터</span>
+          <div class="flex items-center gap-4">
+            <span class="rounded-full bg-slate-800 px-3 py-1 text-white">I <span id="countI">0</span></span>
+            <span class="rounded-full bg-slate-800 px-3 py-1 text-white">IV <span id="countIV">0</span></span>
+            <span class="rounded-full bg-slate-800 px-3 py-1 text-white">V <span id="countV">0</span></span>
+          </div>
+        </div>
+      </footer>
     </main>
 
     <script>
-      const gradeStyles = {
-        low: { accent: "120 213 111", strong: "34 197 94" },
-        mid: { accent: "78 156 255", strong: "37 99 235" },
-        high: { accent: "244 124 255", strong: "217 70 239" }
+      const board = document.querySelector(".board");
+      const flowLine = document.getElementById("flowLine");
+      const board = document.getElementById("board");
+      const nodesLayer = document.getElementById("nodesLayer");
+      const lineLayer = document.getElementById("lineLayer");
+      const activeLine = document.getElementById("activeLine");
+      const committedLines = document.getElementById("committedLines");
+      const banner = document.getElementById("banner");
+      const resetButton = document.getElementById("resetButton");
+      const notes = {
+        do: document.getElementById("note-do"),
+        mi: document.getElementById("note-mi"),
+        sol: document.getElementById("note-sol")
+      const soundToggle = document.getElementById("soundToggle");
+      const keySelect = document.getElementById("keySelect");
+      const countEls = {
+        I: document.getElementById("countI"),
+        IV: document.getElementById("countIV"),
+        V: document.getElementById("countV")
+      };
+      const order = ["do", "mi", "sol"];
+
+      const keyNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+      const solfege = [
+        { id: "do", label: "도", color: "#38bdf8" },
+        { id: "re", label: "레", color: "#818cf8" },
+        { id: "mi", label: "미", color: "#f472b6" },
+        { id: "fa", label: "파", color: "#f97316" },
+        { id: "sol", label: "솔", color: "#22c55e" },
+        { id: "la", label: "라", color: "#eab308" },
+        { id: "ti", label: "시", color: "#fb7185" }
+      ];
+
+      const positions = {
+        do: { col: 1, row: 1 },
+        re: { col: 5, row: 1 },
+        mi: { col: 3, row: 3 },
+        fa: { col: 0, row: 5 },
+        sol: { col: 6, row: 4 },
+        la: { col: 2, row: 6 },
+        ti: { col: 6, row: 6 }
       };
 
-      const toneStyles = {
-        A: { color: "toneA", icon: "♪", freq: 440 },
-        B: { color: "toneB", icon: "♬", freq: 523.25 },
-        C: { color: "toneC", icon: "♫", freq: 659.25 }
-      };
-
-      const missionSets = {
-        low: [
-          {
-            id: "low-stack-6",
-            title: "6층 쌓기",
-            description: "정확하게 6층을 만들어 보세요."
-          },
-          {
-            id: "low-steady-5",
-            title: "흔들림 없이 5층 유지",
-            description: "흔들림 없이 5층까지 쌓아요."
-          }
-        ],
-        mid: [
-          {
-            id: "mid-balance-7",
-            title: "7층 균형 쌓기",
-            description: "안정도 60 이상을 유지하세요."
-          },
-          {
-            id: "mid-stack-8",
-            title: "8층 쌓기",
-            description: "정확하게 8층을 완성하세요."
-          }
-        ],
-        high: [
-          {
-            id: "high-bright-8",
-            title: "밝은 화음으로 8층 쌓기",
-            description: "A/B/C 중 2개 이상 음으로 8층."
-          },
-          {
-            id: "high-mono-10",
-            title: "단화음만 사용해서 타워 완성",
-            description: "한 가지 음만으로 10층을 쌓아요."
-          }
-        ]
-      };
-
-      const params = new URLSearchParams(window.location.search);
-      const grade = params.get("grade") || "mid";
-      const mission = params.get("mission") === "1";
-      const sound = params.get("sound") !== "0";
-      const classmode = params.get("classmode") === "1";
-
-      const palette = gradeStyles[grade] || gradeStyles.mid;
-      document.documentElement.style.setProperty("--color-accent", palette.accent);
-      document.documentElement.style.setProperty(
-        "--color-accent-strong",
-        palette.strong
-      );
-
-      const settingsList = document.getElementById("settingsList");
-      settingsList.innerHTML = `
-        <li>학년 모드: <strong>${grade}</strong></li>
-        <li>미션: <strong>${mission ? "ON" : "OFF"}</strong></li>
-        <li>시간: <strong>사용 안 함</strong></li>
-        <li>사운드: <strong>${sound ? "ON" : "OFF"}</strong></li>
-        <li>수업용 모드: <strong>${classmode ? "ON" : "OFF"}</strong></li>
-      `;
-
-      const floorCount = document.getElementById("floorCount");
-      const stabilityFill = document.getElementById("stabilityFill");
-      const towerArea = document.getElementById("towerArea");
-      const floatingBlock = document.getElementById("floatingBlock");
-      const towerBase = document.getElementById("towerBase");
-      const resultBanner = document.getElementById("resultBanner");
-      const missionText = document.getElementById("missionText");
-      const missionExamples = document.getElementById("missionExamples");
-      const tapHint = document.getElementById("tapHint");
-      const soundStatus = document.getElementById("soundStatus");
-      const toneHistory = document.getElementById("toneHistory");
-      const toneSelector = document.getElementById("toneSelector");
-      const toneButtons = Array.from(document.querySelectorAll(".tone-button"));
+      const chordRules = [
+        { id: "I", label: "으뜸화음 완성!", notes: ["do", "mi", "sol"] },
+        { id: "IV", label: "버금딸림화음 완성!", notes: ["fa", "la", "do"] },
+        { id: "V", label: "딸림화음 완성!", notes: ["sol", "ti", "re"] }
+      ];
 
       const state = {
-        floor: 1,
-        stability: 100,
-        blockWidth: 240,
-        currentX: 0,
-        direction: 1,
-        speed: 1.8,
-        prevX: null,
-        selectedTone: "A",
-        missionCompleted: false,
-        missionFailed: false,
-        shakeCount: 0,
-        usedTones: new Set()
+        isDrawing: false,
+        points: [],
+        sequence: [],
+        points: []
+        committed: [],
+        counts: { I: 0, IV: 0, V: 0 },
+        key: "C",
+        soundOn: true
       };
 
-      let animationId;
+      let audioContext;
+      let noteFrequencies = {};
+      let bannerTimeout;
 
-      const activeMissions = missionSets[grade] || missionSets.mid;
-      const activeMission = activeMissions[0];
-
-      function updateMissionText() {
-        if (!mission || !activeMission) return;
-        missionText.textContent = activeMission.title;
-        missionText.classList.remove("hidden");
+      function getCenter(element) {
+        const boardRect = board.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
+        return {
+          x: rect.left - boardRect.left + rect.width / 2,
+          y: rect.top - boardRect.top + rect.height / 2
+      function populateKeys() {
+        keyNames.forEach((name) => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          keySelect.append(option);
+        });
+        keySelect.value = state.key;
       }
 
-      function renderMissionExamples() {
-        const items = activeMissions
-          .map((item) => `<li><strong>${item.title}</strong> - ${item.description}</li>`)
-          .join("");
-        missionExamples.innerHTML = items;
+      function getBoardMetrics() {
+        const rect = board.getBoundingClientRect();
+        const pad = parseFloat(getComputedStyle(board).getPropertyValue("--pad"));
+        const inner = {
+          left: pad,
+          top: pad,
+          width: rect.width - pad * 2,
+          height: rect.height - pad * 2
+        };
+        return { rect, inner, pad };
       }
 
-      function updateSoundStatus() {
-        soundStatus.textContent = sound ? "Sound ON" : "Sound OFF";
-        soundStatus.classList.toggle("bg-accent/10", sound);
-        soundStatus.classList.toggle("text-accentStrong", sound);
-      }
-
-      function updateHint() {
-        tapHint.textContent = classmode ? "탭하여 놓기" : "화면을 탭하여 블록을 놓아주세요.";
-      }
-
-      function updateToneSelector() {
-        if (grade === "high") {
-          toneSelector.classList.remove("hidden");
-        } else {
-          toneSelector.classList.add("hidden");
-        }
-        toneButtons.forEach((button) => {
-          const isActive = button.dataset.tone === state.selectedTone;
-          button.classList.toggle("bg-accent", isActive);
-          button.classList.toggle("text-white", isActive);
-          button.classList.toggle("border-accentStrong", isActive);
+      function updateLine() {
+      function layoutNodes() {
+        const { rect, inner } = getBoardMetrics();
+        lineLayer.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+        nodesLayer.innerHTML = "";
+        solfege.forEach((note) => {
+          const node = document.createElement("div");
+          const { col, row } = positions[note.id];
+          const x = inner.left + (inner.width / 7) * col;
+          const y = inner.top + (inner.height / 7) * row;
+          node.className = "note absolute flex h-12 w-12 items-center justify-center rounded-full text-base font-bold text-white shadow-lg";
+          node.style.backgroundColor = note.color;
+          node.style.left = `${x}px`;
+          node.style.top = `${y}px`;
+          node.dataset.note = note.id;
+          node.textContent = note.label;
+          nodesLayer.append(node);
         });
       }
 
-      function updateFloatingBlockTone() {
-        const tone = toneStyles[state.selectedTone];
-        floatingBlock.textContent = tone.icon;
-        floatingBlock.classList.remove("bg-toneA", "bg-toneB", "bg-toneC");
-        floatingBlock.classList.add(`bg-${tone.color}`);
+      function getNodeCenters() {
+        const centers = {};
+        const boardRect = board.getBoundingClientRect();
+        nodesLayer.querySelectorAll(".note").forEach((node) => {
+          const rect = node.getBoundingClientRect();
+          centers[node.dataset.note] = {
+            x: rect.left - boardRect.left + rect.width / 2,
+            y: rect.top - boardRect.top + rect.height / 2
+          };
+        });
+        return centers;
       }
 
-      let audioContext;
+      function updateActiveLine() {
+        const points = state.points.map((point) => `${point.x},${point.y}`).join(" ");
+        flowLine.setAttribute("points", points);
+        activeLine.setAttribute("points", points);
+      }
+
+      function resetFlow() {
+        state.isDrawing = false;
+        state.sequence = [];
+      function clearActiveLine() {
+        state.points = [];
+        updateLine();
+        state.sequence = [];
+        updateActiveLine();
+      }
+
+      function showBanner(message, tone) {
+        banner.textContent = message;
+        banner.classList.remove("hidden");
+        banner.classList.toggle("bg-blue-500", tone === "success");
+        banner.classList.toggle("bg-red-500", tone === "fail");
+      function commitLine(color) {
+        if (state.points.length < 2) return;
+        const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+        polyline.setAttribute("fill", "none");
+        polyline.setAttribute("stroke", color);
+        polyline.setAttribute("stroke-width", "18");
+        polyline.setAttribute("stroke-linecap", "round");
+        polyline.setAttribute("stroke-linejoin", "round");
+        polyline.setAttribute("points", state.points.map((point) => `${point.x},${point.y}`).join(" "));
+        committedLines.append(polyline);
+      }
+
+      function hideBanner() {
+        banner.classList.add("hidden");
+      function showBanner(message) {
+        banner.textContent = message;
+        banner.classList.remove("hidden");
+        clearTimeout(bannerTimeout);
+        bannerTimeout = setTimeout(() => {
+          banner.classList.add("hidden");
+        }, 1000);
+      }
 
       function ensureAudioContext() {
         if (!audioContext) {
@@ -400,179 +415,231 @@
         }
       }
 
-      function playTone(toneKey) {
-        if (!sound) return;
+      function playChord() {
+      function playTone(freq, duration, gainLevel = 0.2) {
+        if (!state.soundOn) return;
         ensureAudioContext();
-        const tone = toneStyles[toneKey];
-        if (!tone || !audioContext) return;
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        oscillator.type = "sine";
-        oscillator.frequency.value = tone.freq;
-        gain.gain.value = 0;
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
+        if (!audioContext) return;
         const now = audioContext.currentTime;
-        gain.gain.linearRampToValueAtTime(0.25, now + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        oscillator.start(now);
-        oscillator.stop(now + 0.3);
+        const freqs = [261.63, 329.63, 392];
+        freqs.forEach((freq) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.type = "sine";
+          osc.frequency.value = freq;
+          gain.gain.value = 0;
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          gain.gain.linearRampToValueAtTime(0.25, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.value = 0;
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        gain.gain.linearRampToValueAtTime(gainLevel, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.start(now);
+        osc.stop(now + duration + 0.05);
       }
 
-      function addToneHistory() {
-        const tone = toneStyles[state.selectedTone];
-        const chip = document.createElement("div");
-        chip.className = `rounded-lg py-2 text-white font-semibold bg-${tone.color}`;
-        chip.textContent = tone.icon;
-        toneHistory.prepend(chip);
-        state.usedTones.add(state.selectedTone);
-      }
-
-      function updateStability(delta) {
-        state.stability = Math.max(0, state.stability - delta);
-        stabilityFill.style.width = `${state.stability}%`;
-        if (state.stability < 35 && !state.missionFailed) {
-          resultBanner.textContent = "미션 실패";
-          resultBanner.classList.remove("hidden");
-          state.missionFailed = true;
-        }
-      }
-
-      function showBanner(text, confetti) {
-        resultBanner.textContent = text;
-        resultBanner.classList.remove("hidden");
-        if (confetti) {
-          resultBanner.classList.add("confetti");
-        } else {
-          resultBanner.classList.remove("confetti");
-        }
-      }
-
-      function checkMission() {
-        if (!mission || state.missionCompleted || !activeMission) return;
-        const tonesUsed = state.usedTones.size;
-        const floor = state.floor;
-        if (activeMission.id === "low-stack-6" && floor >= 6) {
-          state.missionCompleted = true;
-        }
-        if (activeMission.id === "low-steady-5" && floor >= 5 && state.shakeCount === 0) {
-          state.missionCompleted = true;
-        }
-        if (activeMission.id === "mid-balance-7" && floor >= 7 && state.stability >= 60) {
-          state.missionCompleted = true;
-        }
-        if (activeMission.id === "mid-stack-8" && floor >= 8) {
-          state.missionCompleted = true;
-        }
-        if (activeMission.id === "high-bright-8" && floor >= 8 && tonesUsed >= 2) {
-          state.missionCompleted = true;
-        }
-        if (activeMission.id === "high-mono-10" && floor >= 10 && tonesUsed === 1) {
-          state.missionCompleted = true;
-        }
-        if (state.missionCompleted) {
-          showBanner("미션 성공", true);
-        }
-      }
-
-      function updateFloor() {
-        floorCount.textContent = state.floor;
-      }
-
-      function setFloatingBlockPosition(x) {
-        const towerWidth = towerArea.clientWidth;
-        const maxX = towerWidth - state.blockWidth;
-        state.currentX = Math.max(0, Math.min(x, maxX));
-        floatingBlock.style.left = `${state.currentX}px`;
-        floatingBlock.style.width = `${state.blockWidth}px`;
-      }
-
-      function animate() {
-        const towerWidth = towerArea.clientWidth;
-        const maxX = towerWidth - state.blockWidth;
-        let nextX = state.currentX + state.direction * state.speed;
-        if (nextX <= 0 || nextX >= maxX) {
-          state.direction *= -1;
-          nextX = Math.max(0, Math.min(nextX, maxX));
-        }
-        setFloatingBlockPosition(nextX);
-        animationId = requestAnimationFrame(animate);
-      }
-
-      function placeBlock() {
-        if (state.blockWidth <= 40) {
-          showBanner("미션 실패", false);
-        }
-        const towerWidth = towerArea.clientWidth;
-        const maxX = towerWidth - state.blockWidth;
-        let targetX = state.currentX;
-        if (grade === "low" && state.prevX !== null) {
-          const center = state.prevX + state.blockWidth / 2;
-          const currentCenter = targetX + state.blockWidth / 2;
-          const snappedCenter = currentCenter + (center - currentCenter) * 0.5;
-          targetX = snappedCenter - state.blockWidth / 2;
-          targetX = Math.max(0, Math.min(targetX, maxX));
-        }
-
-        const prevCenter = state.prevX !== null ? state.prevX + state.blockWidth / 2 : targetX + state.blockWidth / 2;
-        const currentCenter = targetX + state.blockWidth / 2;
-        const offset = Math.abs(currentCenter - prevCenter);
-        const shrink = Math.min(state.blockWidth * 0.6, offset);
-        state.blockWidth = Math.max(36, state.blockWidth - shrink);
-        updateStability(Math.round(offset / 4));
-
-        if (offset > 40) {
-          towerArea.classList.add("shake");
-          state.shakeCount += 1;
-          setTimeout(() => towerArea.classList.remove("shake"), 600);
-        }
-
-        const stackedBlock = document.createElement("div");
-        stackedBlock.className = `block bg-${toneStyles[state.selectedTone].color}`;
-        stackedBlock.style.width = `${state.blockWidth}px`;
-        stackedBlock.style.left = `${targetX}px`;
-        stackedBlock.style.bottom = `${(state.floor - 1) * 40 + 12}px`;
-        stackedBlock.textContent = toneStyles[state.selectedTone].icon;
-        towerBase.appendChild(stackedBlock);
-
-        state.prevX = targetX;
-        state.floor += 1;
-        updateFloor();
-        addToneHistory();
-        playTone(state.selectedTone);
-        checkMission();
-      }
-
-      function handleTap() {
-        placeBlock();
-        setFloatingBlockPosition(state.currentX);
-      }
-
-      towerArea.addEventListener("click", handleTap);
-      document.addEventListener("keydown", (event) => {
-        if (event.code === "Space") {
-          event.preventDefault();
-          handleTap();
-        }
-      });
-
-      toneButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          state.selectedTone = button.dataset.tone;
-          updateToneSelector();
-          updateFloatingBlockTone();
+      function playChord(notes) {
+        notes.forEach((note) => {
+          playTone(noteFrequencies[note], 0.5, 0.18);
         });
+      }
+
+      function handleSuccess() {
+        showBanner("I chord 완성", "success");
+        playChord();
+      function updateFrequencies() {
+        const keyIndex = keyNames.indexOf(state.key);
+        const baseMidi = 60 + keyIndex; // C4 기준
+        const intervals = [0, 2, 4, 5, 7, 9, 11];
+        noteFrequencies = {};
+        solfege.forEach((note, idx) => {
+          const midi = baseMidi + intervals[idx];
+          noteFrequencies[note.id] = 440 * Math.pow(2, (midi - 69) / 12);
+        });
+      }
+
+      function checkChordCompletion() {
+        const uniqueNotes = new Set(state.sequence);
+        const matches = chordRules.filter((rule) => rule.notes.every((note) => uniqueNotes.has(note)));
+        if (matches.length === 0) return null;
+        return matches;
+      }
+
+      function updateCounters() {
+        countEls.I.textContent = state.counts.I;
+        countEls.IV.textContent = state.counts.IV;
+        countEls.V.textContent = state.counts.V;
+      }
+
+      function resetAll() {
+        clearActiveLine();
+        committedLines.innerHTML = "";
+        state.committed = [];
+        state.counts = { I: 0, IV: 0, V: 0 };
+        updateCounters();
+        banner.classList.add("hidden");
+      }
+
+      function getPointerPosition(event) {
+        const rect = board.getBoundingClientRect();
+        return {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top
+        };
+      }
+
+      function handleFail(message) {
+        showBanner(message, "fail");
+        resetFlow();
+      function findSnappedNode(pointer, centers) {
+        const radius = 22;
+        let snapped = null;
+        Object.entries(centers).forEach(([note, center]) => {
+          const distance = Math.hypot(pointer.x - center.x, pointer.y - center.y);
+          if (distance <= radius) {
+            snapped = { note, center };
+          }
+        });
+        return snapped;
+      }
+
+      function handleStart(pointer) {
+        hideBanner();
+      function handleStart(event) {
+        ensureAudioContext();
+        const startCenter = getCenter(notes.do);
+        const distance = Math.hypot(pointer.x - startCenter.x, pointer.y - startCenter.y);
+        if (distance > 30) {
+          handleFail("도에서 시작해 주세요!");
+          return;
+        }
+        const pointer = getPointerPosition(event);
+        const centers = getNodeCenters();
+        const snapped = findSnappedNode(pointer, centers);
+        if (!snapped) return;
+        state.isDrawing = true;
+        state.sequence = ["do"];
+        state.points = [startCenter, pointer];
+        updateLine();
+        state.sequence = [snapped.note];
+        state.points = [snapped.center, snapped.center];
+        activeLine.setAttribute("stroke", solfege.find((note) => note.id === snapped.note).color);
+        updateActiveLine();
+        playTone(noteFrequencies[snapped.note], 0.12);
+      }
+
+      function handleMove(pointer) {
+      function handleMove(event) {
+        if (!state.isDrawing) return;
+        const pointer = getPointerPosition(event);
+        const centers = getNodeCenters();
+        state.points[state.points.length - 1] = pointer;
+        updateLine();
+        const expected = order[state.sequence.length];
+        if (!expected) return;
+        const targetCenter = getCenter(notes[expected]);
+        const distance = Math.hypot(pointer.x - targetCenter.x, pointer.y - targetCenter.y);
+        if (distance <= 30) {
+          state.sequence.push(expected);
+          state.points[state.points.length - 1] = targetCenter;
+          state.points.push(targetCenter);
+          updateLine();
+          if (state.sequence.length === order.length) {
+            state.isDrawing = false;
+            handleSuccess();
+          }
+        updateActiveLine();
+        const snapped = findSnappedNode(pointer, centers);
+        if (snapped && snapped.note !== state.sequence[state.sequence.length - 1]) {
+          state.sequence.push(snapped.note);
+          state.points[state.points.length - 1] = snapped.center;
+          state.points.push(snapped.center);
+          updateActiveLine();
+          playTone(noteFrequencies[snapped.note], 0.12);
+        }
+      }
+
+      function handleEnd() {
+        if (!state.isDrawing) return;
+        state.isDrawing = false;
+        handleFail("도 → 미 → 솔 순서로 연결해요!");
+      }
+
+      function getPointerPosition(event) {
+        const rect = board.getBoundingClientRect();
+        return {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top
+        };
+        state.points[state.points.length - 1] = state.points[state.points.length - 1];
+        const matches = checkChordCompletion();
+        if (matches) {
+          matches.forEach((match) => {
+            state.counts[match.id] += 1;
+          });
+          updateCounters();
+          showBanner(matches[0].label);
+          playChord(matches[0].notes);
+        }
+        const color = matches ? "#22d3ee" : "#64748b";
+        commitLine(color);
+        clearActiveLine();
+      }
+
+      board.addEventListener("pointerdown", (event) => {
+        board.setPointerCapture(event.pointerId);
+        handleStart(getPointerPosition(event));
+        handleStart(event);
       });
 
-      updateMissionText();
-      renderMissionExamples();
-      updateSoundStatus();
-      updateHint();
-      updateToneSelector();
-      updateFloatingBlockTone();
-      setFloatingBlockPosition(towerArea.clientWidth / 2 - state.blockWidth / 2);
-      updateFloor();
-      animationId = requestAnimationFrame(animate);
+      board.addEventListener("pointermove", (event) => {
+        handleMove(getPointerPosition(event));
+        handleMove(event);
+      });
+
+      board.addEventListener("pointerup", () => {
+        handleEnd();
+      });
+
+      board.addEventListener("pointerleave", () => {
+        handleEnd();
+      });
+
+      resetButton.addEventListener("click", () => {
+        hideBanner();
+        resetFlow();
+        resetAll();
+      });
+
+      soundToggle.addEventListener("click", () => {
+        state.soundOn = !state.soundOn;
+        soundToggle.textContent = state.soundOn ? "Sound ON" : "Sound OFF";
+        soundToggle.classList.toggle("bg-emerald-500", state.soundOn);
+        soundToggle.classList.toggle("text-slate-900", state.soundOn);
+      });
+
+      keySelect.addEventListener("change", (event) => {
+        state.key = event.target.value;
+        updateFrequencies();
+      });
+
+      window.addEventListener("resize", () => {
+        layoutNodes();
+      });
+
+      populateKeys();
+      updateFrequencies();
+      layoutNodes();
+      updateCounters();
     </script>
   </body>
 </html>
