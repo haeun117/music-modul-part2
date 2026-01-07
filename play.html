@@ -1,3 +1,4 @@
+<script src="https://cdn.tailwindcss.com"></script>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -5,26 +6,380 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Harmony Stack – Play</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tower-shake { animation: shake 0.18s infinite; }
+    @keyframes shake {
+      0% { transform: translate(0,0) rotate(0deg); }
+      25% { transform: translate(1px,0) rotate(0.2deg); }
+      50% { transform: translate(0,1px) rotate(-0.2deg); }
+      75% { transform: translate(-1px,0) rotate(0.2deg); }
+      100% { transform: translate(0,0) rotate(0deg); }
+    }
+    .no-select { user-select: none; -webkit-user-select: none; }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-50">
-  <main class="max-w-4xl mx-auto p-5 space-y-4">
-    <a class="text-sm underline text-slate-600" href="./index.html">← Mode Select로</a>
-    <h1 class="text-2xl font-bold">Play (임시)</h1>
-    <p class="text-slate-600">쿼리스트링으로 넘어온 설정값을 표시합니다.</p>
 
-    <div class="rounded-2xl border bg-white p-4 shadow-sm">
-      <pre id="out" class="text-sm whitespace-pre-wrap"></pre>
+<body class="min-h-screen bg-slate-50 no-select">
+  <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
+    <!-- Top bar -->
+    <div class="flex items-center justify-between gap-3">
+      <a class="text-sm underline text-slate-600" href="./index.html">← Mode Select</a>
+      <div class="text-sm text-slate-600">
+        <span id="modeLabel" class="font-medium text-slate-800">중학년</span>
+        <span class="mx-2">·</span>
+        <span id="missionLabel">미션 OFF</span>
+        <span class="mx-2">·</span>
+        <span id="soundLabel">사운드 ON</span>
+      </div>
     </div>
 
-    <p class="text-sm text-slate-600">
-      다음 단계에서 여기다가 Stack 스타일 블록(좌우 이동 → 탭 → 쌓기)을 붙일 거야.
-    </p>
+    <!-- HUD -->
+    <section class="grid md:grid-cols-3 gap-3">
+      <div class="rounded-2xl border bg-white p-4 shadow-sm">
+        <div class="text-xs text-slate-500">Floor</div>
+        <div class="text-3xl font-bold" id="floorText">0</div>
+        <div class="mt-2 text-sm text-slate-600" id="goalText"></div>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="text-xs text-slate-500">Stability</div>
+          <div class="text-xs text-slate-500" id="stabilityText">100</div>
+        </div>
+        <div class="mt-2 h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div id="stabilityBar" class="h-full w-full bg-black"></div>
+        </div>
+        <div class="mt-2 text-sm text-slate-600" id="hintText">화면을 탭해서 블록을 놓아봐!</div>
+      </div>
+
+      <div class="rounded-2xl border bg-white p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="text-xs text-slate-500">Timer</div>
+          <div class="text-xs text-slate-500" id="timerText">—</div>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button id="pauseBtn" class="px-4 py-2 rounded-xl border bg-white">일시정지</button>
+          <button id="resetBtn" class="px-4 py-2 rounded-xl border bg-white">리셋</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main layout -->
+    <section class="grid lg:grid-cols-[1fr_320px] gap-4">
+      <!-- Game canvas -->
+      <div class="rounded-2xl border bg-white shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b flex items-center justify-between">
+          <div class="font-semibold">Harmony Stack</div>
+          <div class="text-xs text-slate-500">Tap / Click to drop</div>
+        </div>
+
+        <div id="gameArea" class="relative h-[520px] bg-gradient-to-b from-slate-50 to-white">
+          <!-- Tower container -->
+          <div id="tower" class="absolute left-1/2 bottom-10 -translate-x-1/2 w-[280px]">
+            <!-- blocks will be appended here -->
+          </div>
+
+          <!-- Moving block -->
+          <div id="moving" class="absolute bottom-10 left-1/2 -translate-x-1/2">
+            <div id="movingBlock" class="h-10 rounded-xl bg-slate-900 shadow-md"></div>
+          </div>
+
+          <!-- Banner -->
+          <div id="banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-2xl bg-black text-white text-sm shadow-lg">
+            배너
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <aside class="rounded-2xl border bg-white shadow-sm p-4 space-y-4">
+        <div>
+          <div class="text-sm font-semibold">고학년 선택</div>
+          <p class="text-xs text-slate-500">고학년 모드에서만 A/B/C 선택이 열립니다.</p>
+          <div class="mt-2 flex gap-2">
+            <button class="pickBtn px-3 py-2 rounded-xl border bg-white" data-pick="A">A</button>
+            <button class="pickBtn px-3 py-2 rounded-xl border bg-white" data-pick="B">B</button>
+            <button class="pickBtn px-3 py-2 rounded-xl border bg-white" data-pick="C">C</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="text-sm font-semibold">누적 ‘음’</div>
+          <p class="text-xs text-slate-500">실제 사운드는 나중에. 지금은 쌓인 개수만 표시.</p>
+          <div id="notesRow" class="mt-2 flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="pt-2 border-t">
+          <div class="text-sm font-semibold">설정값</div>
+          <pre id="debug" class="mt-2 text-xs bg-slate-50 rounded-xl p-3 overflow-auto"></pre>
+        </div>
+      </aside>
+    </section>
   </main>
 
 <script>
+  // ---------- Read settings ----------
   const params = new URLSearchParams(location.search);
-  const obj = Object.fromEntries(params.entries());
-  document.getElementById("out").textContent = JSON.stringify(obj, null, 2);
+  const cfg = {
+    grade: params.get("grade") || "mid",      // low | mid | high
+    mission: Number(params.get("mission") || "0"),
+    time: Number(params.get("time") || "0"),  // minutes: 5/10/15
+    sound: Number(params.get("sound") || "1"),
+    classmode: Number(params.get("classmode") || "0"),
+  };
+  document.getElementById("debug").textContent = JSON.stringify(cfg, null, 2);
+
+  const gradeName = cfg.grade === "low" ? "저학년" : cfg.grade === "high" ? "고학년" : "중학년";
+  document.getElementById("modeLabel").textContent = gradeName;
+  document.getElementById("missionLabel").textContent = cfg.mission ? "미션 ON" : "미션 OFF";
+  document.getElementById("soundLabel").textContent = cfg.sound ? "사운드 ON" : "사운드 OFF";
+  document.getElementById("hintText").textContent = cfg.classmode ? "탭해서 놓기" : "화면을 탭해서 블록을 놓아봐!";
+
+  // Mission goal text (text only for now)
+  const goalText = document.getElementById("goalText");
+  if (!cfg.mission) goalText.textContent = "";
+  else if (cfg.grade === "low") goalText.textContent = "목표: 10층 쌓기";
+  else if (cfg.grade === "mid") goalText.textContent = "목표: 흔들림 없이 8층 유지";
+  else goalText.textContent = "목표: ‘밝은 화음’ 8층 쌓기 (텍스트)";
+
+  // ---------- Game constants ----------
+  const tower = document.getElementById("tower");
+  const moving = document.getElementById("moving");
+  const movingBlock = document.getElementById("movingBlock");
+  const banner = document.getElementById("banner");
+
+  const floorText = document.getElementById("floorText");
+  const stabilityText = document.getElementById("stabilityText");
+  const stabilityBar = document.getElementById("stabilityBar");
+  const notesRow = document.getElementById("notesRow");
+
+  let paused = false;
+  let floor = 0;
+  let stability = 100;
+
+  // block geometry (px)
+  const HEIGHT = 40;
+  const BASE_WIDTH = 220;
+  let currentWidth = BASE_WIDTH;
+
+  // x position in px relative to tower container center
+  let x = 0;
+  let dir = 1;
+  let speed = 1.6; // px per frame-ish (adjusted in RAF)
+  let lastTime = performance.now();
+
+  // last placed x (for overlap)
+  let lastX = 0;
+
+  // high-grade pick
+  let pick = "A";
+  const pickBtns = Array.from(document.querySelectorAll(".pickBtn"));
+  function renderPickUI() {
+    const enabled = cfg.grade === "high";
+    pickBtns.forEach(btn => {
+      btn.disabled = !enabled;
+      btn.classList.toggle("opacity-40", !enabled);
+      btn.classList.toggle("cursor-not-allowed", !enabled);
+      const isOn = btn.dataset.pick === pick;
+      btn.classList.toggle("bg-black", isOn);
+      btn.classList.toggle("text-white", isOn);
+      btn.classList.toggle("border-black", isOn);
+    });
+  }
+  pickBtns.forEach(btn => btn.addEventListener("click", () => {
+    if (cfg.grade !== "high") return;
+    pick = btn.dataset.pick;
+    renderPickUI();
+    // change moving color slightly by pick
+    movingBlock.classList.remove("bg-slate-900","bg-slate-700","bg-slate-500");
+    movingBlock.classList.add(pick === "A" ? "bg-slate-900" : pick === "B" ? "bg-slate-700" : "bg-slate-500");
+  }));
+  renderPickUI();
+
+  // ---------- Timer ----------
+  let timerSec = cfg.time ? cfg.time * 60 : null;
+  let timerInterval = null;
+  const timerText = document.getElementById("timerText");
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
+  }
+  function startTimer() {
+    if (!timerSec) { timerText.textContent = "—"; return; }
+    timerText.textContent = formatTime(timerSec);
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (paused) return;
+      timerSec -= 1;
+      timerText.textContent = formatTime(Math.max(0, timerSec));
+      if (timerSec <= 0) {
+        showBanner("시간 종료! (result는 다음 단계)");
+        clearInterval(timerInterval);
+      }
+    }, 1000);
+  }
+  startTimer();
+
+  // ---------- UI helpers ----------
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+  function setStability(v) {
+    stability = clamp(v, 0, 100);
+    stabilityText.textContent = Math.round(stability);
+    stabilityBar.style.width = `${stability}%`;
+  }
+  setStability(100);
+
+  function showBanner(text) {
+    banner.textContent = text;
+    banner.classList.remove("hidden");
+    clearTimeout(showBanner._t);
+    showBanner._t = setTimeout(() => banner.classList.add("hidden"), 1400);
+  }
+
+  function addNoteDot() {
+    const dot = document.createElement("div");
+    dot.className = "h-7 w-7 rounded-full bg-slate-900";
+    if (cfg.grade === "high") {
+      dot.className = "h-7 w-7 rounded-full " + (pick === "A" ? "bg-slate-900" : pick === "B" ? "bg-slate-700" : "bg-slate-500");
+      dot.title = pick;
+    }
+    notesRow.appendChild(dot);
+  }
+
+  function updateMovingBlock() {
+    moving.style.bottom = (40 + floor * HEIGHT) + "px";
+    movingBlock.style.width = currentWidth + "px";
+    moving.style.transform = `translateX(calc(-50% + ${x}px))`;
+  }
+
+  // ---------- Core drop logic ----------
+  function drop() {
+    if (paused) return;
+
+    // low-grade snap assist: reduce error by 50%
+    let snappedX = x;
+    if (cfg.grade === "low") {
+      const err = x - lastX;
+      snappedX = lastX + err * 0.5;
+    }
+
+    // compute overlap (like Stack)
+    const diff = snappedX - lastX;
+    const overlap = currentWidth - Math.abs(diff);
+
+    // If overlap <= 0 : keep playing but mark as fail state
+    if (overlap <= 8) {
+      setStability(stability - 12);
+      tower.classList.add("tower-shake");
+      showBanner("미션 실패! (계속 가능)");
+      // shrink hard but not zero
+      currentWidth = Math.max(24, Math.floor(currentWidth * 0.6));
+    } else {
+      // normal placement
+      const newBlock = document.createElement("div");
+      newBlock.className = "h-10 rounded-xl shadow-md";
+      // color by pick (only visual)
+      const col = (cfg.grade === "high")
+        ? (pick === "A" ? "bg-slate-900" : pick === "B" ? "bg-slate-700" : "bg-slate-500")
+        : "bg-slate-900";
+      newBlock.classList.add(col);
+
+      newBlock.style.width = overlap + "px";
+      // position in tower container: center + adjusted x
+      const placedX = lastX + diff * 0.5; // keep center aligned to overlap
+      newBlock.style.transform = `translateX(${placedX}px)`;
+
+      tower.appendChild(newBlock);
+
+      // update stats
+      floor += 1;
+      floorText.textContent = floor;
+      addNoteDot();
+
+      // stability drop proportional to misalignment
+      const penalty = clamp(Math.abs(diff) / 12, 0, 10);
+      setStability(stability - penalty);
+
+      // shake threshold
+      if (Math.abs(diff) > 38) tower.classList.add("tower-shake");
+      else tower.classList.remove("tower-shake");
+
+      // update for next
+      currentWidth = overlap;
+      lastX = placedX;
+
+      // simple mission success banner (text only)
+      if (cfg.mission) {
+        if (cfg.grade === "low" && floor === 10) showBanner("성공! 10층 달성 🎉");
+        if (cfg.grade === "mid" && floor === 8 && !tower.classList.contains("tower-shake")) showBanner("성공! 흔들림 없이 8층 🎉");
+        if (cfg.grade === "high" && floor === 8) showBanner("성공! 8층 달성 🎉");
+      }
+    }
+
+    // reset moving block state
+    x = 0;
+    dir = Math.random() > 0.5 ? 1 : -1;
+    speed = clamp(speed + 0.05, 1.4, 2.6);
+    updateMovingBlock();
+  }
+
+  // tap/click to drop
+  document.getElementById("gameArea").addEventListener("pointerdown", (e) => {
+    // prevent selecting buttons in side panel
+    if (e.target.closest("button")) return;
+    drop();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.code === "Space") { e.preventDefault(); drop(); }
+  });
+
+  // pause / reset
+  document.getElementById("pauseBtn").addEventListener("click", () => {
+    paused = !paused;
+    document.getElementById("pauseBtn").textContent = paused ? "재개" : "일시정지";
+  });
+  document.getElementById("resetBtn").addEventListener("click", () => resetGame());
+
+  function resetGame() {
+    paused = false;
+    document.getElementById("pauseBtn").textContent = "일시정지";
+    floor = 0;
+    floorText.textContent = "0";
+    setStability(100);
+    tower.classList.remove("tower-shake");
+    tower.innerHTML = "";
+    notesRow.innerHTML = "";
+    currentWidth = BASE_WIDTH;
+    lastX = 0;
+    x = 0;
+    dir = 1;
+    speed = 1.6;
+    // timer reset
+    timerSec = cfg.time ? cfg.time * 60 : null;
+    startTimer();
+    showBanner("리셋!");
+    updateMovingBlock();
+  }
+
+  // ---------- Animation loop ----------
+  function tick(t) {
+    const dt = Math.min(32, t - lastTime);
+    lastTime = t;
+    if (!paused) {
+      // bounds based on width
+      const bound = 120; // px
+      x += dir * speed * (dt / 16);
+      if (x > bound) { x = bound; dir = -1; }
+      if (x < -bound) { x = -bound; dir = 1; }
+      updateMovingBlock();
+    }
+    requestAnimationFrame(tick);
+  }
+  updateMovingBlock();
+  requestAnimationFrame(tick);
 </script>
 </body>
 </html>
