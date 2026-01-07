@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --color-ink: 15 23 42;
+  --color-surface: 248 250 252;
+  --color-muted: 226 232 240;
+  --color-accent: 78 156 255;
+  --color-accent-strong: 37 99 235;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --radius-2xl: 1.25rem;
+
+  --shadow-soft: 0 8px 24px -12px rgba(15, 23, 42, 0.35);
+  --shadow-lift: 0 14px 32px -18px rgba(30, 41, 59, 0.45);
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+}
+
+[data-grade="low"] {
+  --color-accent: 120 213 111;
+  --color-accent-strong: 34 197 94;
+}
+
+[data-grade="mid"] {
+  --color-accent: 78 156 255;
+  --color-accent-strong: 37 99 235;
+}
+
+[data-grade="high"] {
+  --color-accent: 244 124 255;
+  --color-accent-strong: 217 70 239;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Pretendard", "Inter", system-ui, sans-serif;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+p {
+  line-height: 1.6;
+}
