@@ -202,4 +202,224 @@
     const baseMidi = 60 + keyIndex; // Do = selected key at around 4th octave
     freqs = {};
     Object.keys(scaleIntervals).forEach(k=>{
-      const midi = baseMidi + scaleInterval
+      const midi = baseMidi + scaleIntervals[k];
+      freqs[k] = midiToFreq(midi);
+    });
+  }
+
+  function playTone(note, duration=0.12, gainLevel=0.18){
+    if(!soundOn) return;
+    ensureAudio();
+    if(!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freqs[note];
+    g.gain.value = 0.0001;
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+    g.gain.exponentialRampToValueAtTime(gainLevel, now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+duration);
+    osc.start(now);
+    osc.stop(now+duration+0.05);
+  }
+
+  function playChord(notes){
+    // 3음 동시 재생
+    notes.forEach(n => playTone(n, 0.45, 0.14));
+  }
+
+  // =========================
+  // 6) DRAW LOGIC (snap + polyline)
+  // =========================
+  const SNAP_R = 28; // viewBox units
+  let drawing = false;
+  let pathNodeIds = [];   // unique node ids visited in this stroke
+  let pathNotes = [];     // solfege notes visited (do/re/...)
+  let points = [];        // vb points
+
+  let counts = { I:0, IV:0, V:0 };
+
+  function setStatus(t){ statusEl.textContent = t; }
+
+  function showToast(text, ok=true){
+    toast.textContent = text;
+    toast.style.background = ok ? "#10b981" : "#64748b";
+    toast.classList.remove("opacity-0","-translate-y-2");
+    toast.classList.add("opacity-100","translate-y-0");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>{
+      toast.classList.add("opacity-0","-translate-y-2");
+      toast.classList.remove("opacity-100","translate-y-0");
+    }, 1000);
+  }
+
+  function updateActive(){
+    active.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(" "));
+  }
+
+  function clearActive(){
+    pathNodeIds = [];
+    pathNotes = [];
+    points = [];
+    updateActive();
+  }
+
+  function commitLine(color="#94a3b8"){
+    if(points.length < 2) return;
+    const pl = document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    pl.setAttribute("fill","none");
+    pl.setAttribute("stroke", color);
+    pl.setAttribute("stroke-width","16");
+    pl.setAttribute("stroke-linecap","round");
+    pl.setAttribute("stroke-linejoin","round");
+    pl.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(" "));
+    committed.appendChild(pl);
+  }
+
+  function nearestNode(vb){
+    let best = null;
+    let bestD = Infinity;
+    for(const n of nodesData){
+      const c = centers[n.id];
+      const d = Math.hypot(vb.x - c.x, vb.y - c.y);
+      if(d < bestD){
+        bestD = d;
+        best = n;
+      }
+    }
+    if(best && bestD <= SNAP_R){
+      return { node: best, center: centers[best.id] };
+    }
+    return null;
+  }
+
+  function checkChords(){
+    const set = new Set(pathNotes);
+    const matched = chordRules.filter(r => r.notes.every(n => set.has(n)));
+    return matched;
+  }
+
+  function updateCounters(){
+    cI.textContent = counts.I;
+    cIV.textContent = counts.IV;
+    cV.textContent = counts.V;
+  }
+
+  // pointer events
+  board.addEventListener("pointerdown", (e)=>{
+    ensureAudio();
+    drawing = false;
+
+    const vb = pointerToVB(e);
+    const snap = nearestNode(vb);
+    if(!snap) return; // 노드에서 시작해야 함
+
+    drawing = true;
+    try { board.setPointerCapture(e.pointerId); } catch(_){}
+
+    clearActive();
+    pathNodeIds.push(snap.node.id);
+    pathNotes.push(snap.node.note);
+
+    // active line starts at snapped node center
+    points = [ snap.center, snap.center ];
+    active.setAttribute("stroke", snap.node.color);
+    updateActive();
+
+    playTone(snap.node.note, 0.12);
+    setStatus("연결 중… 노드로 이어보세요");
+  });
+
+  board.addEventListener("pointermove", (e)=>{
+    if(!drawing) return;
+    const vb = pointerToVB(e);
+
+    // last point is pointer
+    points[points.length - 1] = vb;
+    updateActive();
+
+    const snap = nearestNode(vb);
+    if(!snap) return;
+
+    // if new node id not visited yet -> snap + add point
+    if(!pathNodeIds.includes(snap.node.id)){
+      pathNodeIds.push(snap.node.id);
+      pathNotes.push(snap.node.note);
+      // lock to center and extend
+      points[points.length - 1] = snap.center;
+      points.push(snap.center);
+      updateActive();
+      playTone(snap.node.note, 0.12);
+    }
+  });
+
+  function endStroke(){
+    if(!drawing) return;
+    drawing = false;
+
+    const matched = checkChords();
+    if(matched.length){
+      const first = matched[0];
+      counts[first.id] += 1;
+      updateCounters();
+      showToast(first.msg, true);
+      playChord(first.notes);
+      commitLine("#0ea5e9");
+      setStatus("화음 완성! 계속 이어서 만들어보세요.");
+    } else {
+      commitLine("#94a3b8");
+      setStatus("노드에서 드래그를 시작해 연결하세요.");
+    }
+    clearActive();
+  }
+
+  board.addEventListener("pointerup", endStroke);
+  board.addEventListener("pointercancel", endStroke);
+  board.addEventListener("pointerleave", endStroke);
+
+  // =========================
+  // 7) CONTROLS
+  // =========================
+  function populateKeys(){
+    keySelect.innerHTML = "";
+    keyNames.forEach(k=>{
+      const opt = document.createElement("option");
+      opt.value = k; opt.textContent = k;
+      keySelect.appendChild(opt);
+    });
+    keySelect.value = currentKey;
+  }
+
+  soundToggle.addEventListener("click", ()=>{
+    soundOn = !soundOn;
+    soundToggle.textContent = soundOn ? "Sound ON" : "Sound OFF";
+  });
+
+  keySelect.addEventListener("change", (e)=>{
+    currentKey = e.target.value;
+    updateFreqs();
+    showToast(`Key: ${currentKey}`, false);
+  });
+
+  resetButton.addEventListener("click", ()=>{
+    committed.innerHTML = "";
+    clearActive();
+    counts = { I:0, IV:0, V:0 };
+    updateCounters();
+    setStatus("노드에서 드래그를 시작해 연결하세요.");
+    showToast("리셋!", false);
+  });
+
+  // =========================
+  // 8) INIT
+  // =========================
+  renderGrid();
+  populateKeys();
+  updateFreqs();
+  renderNodes();
+  updateCounters();
+</script>
+</body>
+</html>
