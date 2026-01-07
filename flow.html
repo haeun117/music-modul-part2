@@ -1,662 +1,205 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/flow.html b/flow.html
-index cdbbc9047011e772fefa7c5f16ef9f31409c1197..148f1db92d0862b670af71916703c5a58c6852c2 100644
---- a/flow.html
-+++ b/flow.html
-@@ -1,330 +1,423 @@
- <!doctype html>
- <html lang="ko">
-   <head>
-     <meta charset="utf-8" />
-     <meta name="viewport" content="width=device-width, initial-scale=1" />
--    <title>Harmony Stack | Flow Free Chord</title>
-+    <title>Draw Chord</title>
-     <script src="https://cdn.tailwindcss.com"></script>
--    <script>
--      tailwind.config = {
--        theme: {
--          extend: {
--            colors: {
--              ink: "#0f172a",
--              surface: "#f8fafc",
--              mission: "#3b82f6"
--            },
--            borderRadius: {
--              "2xl": "1.25rem"
--            }
--          }
--        }
--      };
--    </script>
-     <style>
-       body {
-         font-family: "Pretendard", "Inter", system-ui, sans-serif;
-       }
-       .board {
-         touch-action: none;
-+        --pad: 24px;
-+        background-image:
-+          linear-gradient(to right, rgba(148, 163, 184, 0.35) 1px, transparent 1px),
-+          linear-gradient(to bottom, rgba(148, 163, 184, 0.35) 1px, transparent 1px);
-+        background-size: calc((100% - (var(--pad) * 2)) / 7) calc((100% - (var(--pad) * 2)) / 7);
-+        background-position: var(--pad) var(--pad);
-+      }
-+      .note {
-+        transform: translate(-50%, -50%);
-       }
-     </style>
-   </head>
--  <body class="min-h-screen bg-surface text-ink">
--    <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-8">
--      <header class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-md">
--        <div>
--          <p class="text-sm font-semibold text-slate-500">Harmony Stack</p>
--          <h1 class="text-2xl font-bold">Flow Free 스타일 화음 연결</h1>
--        </div>
--        <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
--          <p class="text-xs font-semibold text-blue-500">현재 미션</p>
--          <p class="text-sm font-semibold text-blue-600">
--            으뜸화음(I) 도-미-솔 연결
--          </p>
-+  <body class="min-h-screen bg-slate-100 text-slate-900">
-+    <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6">
-+      <header class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow">
-+        <h1 class="text-xl font-semibold">Draw Chord</h1>
-+        <div class="flex flex-wrap items-center gap-2">
-+          <label class="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm font-semibold">
-+            <span>Key</span>
-+            <select id="keySelect" class="rounded-full border border-slate-200 bg-white px-2 py-1 text-sm">
-+            </select>
-+          </label>
-+          <button
-+            id="soundToggle"
-+            type="button"
-+            class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold"
-+          >
-+            Sound ON
-+          </button>
-+          <button
-+            id="resetButton"
-+            type="button"
-+            class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-+          >
-+            Reset
-+          </button>
-         </div>
-       </header>
- 
--      <section class="grid gap-6 lg:grid-cols-[2fr_1fr]">
--        <div class="flex flex-col items-center gap-4">
--          <div class="board relative w-full max-w-[520px] rounded-2xl bg-white p-4 shadow-lg">
--            <div class="grid grid-cols-6 gap-3">
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--              <div class="cell aspect-square rounded-xl bg-slate-50"></div>
--            </div>
--            <svg
--              id="lineLayer"
--              class="pointer-events-none absolute inset-0 h-full w-full"
--              viewBox="0 0 520 520"
--              preserveAspectRatio="none"
--            >
--              <polyline
--                id="flowLine"
--                fill="none"
--                stroke="#3b82f6"
--                stroke-width="16"
--                stroke-linecap="round"
--                stroke-linejoin="round"
--                points=""
--              ></polyline>
--            </svg>
--            <div
--              id="note-do"
--              data-note="do"
--              class="note absolute flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white shadow-md"
--              style="left: 10%; top: 20%;"
--            >
--              도
--            </div>
--            <div
--              id="note-mi"
--              data-note="mi"
--              class="note absolute flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white shadow-md"
--              style="left: 55%; top: 40%;"
--            >
--              미
--            </div>
--            <div
--              id="note-sol"
--              data-note="sol"
--              class="note absolute flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white shadow-md"
--              style="left: 72%; top: 70%;"
--            >
--              솔
--            </div>
--          </div>
--          <div
--            id="banner"
--            class="hidden rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
--          ></div>
-+      <section class="flex flex-col items-center gap-4">
-+        <div
-+          id="board"
-+          class="board relative aspect-square w-full max-w-[520px] rounded-2xl border border-slate-200 bg-white"
-+        >
-+          <svg
-+            id="lineLayer"
-+            class="pointer-events-none absolute inset-0 h-full w-full"
-+            viewBox="0 0 520 520"
-+            preserveAspectRatio="none"
-+          >
-+            <g id="committedLines"></g>
-+            <polyline
-+              id="activeLine"
-+              fill="none"
-+              stroke="#38bdf8"
-+              stroke-width="16"
-+              stroke-linecap="round"
-+              stroke-linejoin="round"
-+              points=""
-+            ></polyline>
-+          </svg>
-+          <div id="nodesLayer" class="absolute inset-0"></div>
-         </div>
--
--        <aside class="flex flex-col gap-4">
--          <div class="rounded-2xl bg-white p-5 shadow-md">
--            <h2 class="text-lg font-semibold">미션 진행</h2>
--            <p class="mt-2 text-sm text-slate-500">
--              도 → 미 → 솔 순서로 연결하면 성공합니다.
--            </p>
--            <ul class="mt-4 space-y-2 text-sm text-slate-600">
--              <li>시작: 도</li>
--              <li>다음: 미</li>
--              <li>마지막: 솔</li>
--            </ul>
--          </div>
--          <div class="rounded-2xl bg-white p-5 shadow-md">
--            <h2 class="text-lg font-semibold">조작 안내</h2>
--            <p class="mt-2 text-sm text-slate-500">
--              큰 터치 타겟으로 드래그를 지원합니다.
--            </p>
--          </div>
--        </aside>
-+        <div
-+          id="banner"
-+          class="hidden rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white"
-+        ></div>
-       </section>
- 
--      <footer class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-md">
--        <button
--          type="button"
--          id="resetButton"
--          class="min-h-[44px] rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold"
--        >
--          Reset
--        </button>
--        <p class="text-sm font-semibold text-slate-500">Hint: 도에서 시작해 미, 솔로 연결!</p>
-+      <footer class="flex flex-col gap-3 rounded-2xl bg-white p-4 text-sm font-semibold text-slate-600 shadow">
-+        <p id="statusText">드래그로 음을 연결하세요</p>
-+        <div class="flex items-center gap-4">
-+          <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-900">I <span id="countI">0</span></span>
-+          <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-900">IV <span id="countIV">0</span></span>
-+          <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-900">V <span id="countV">0</span></span>
-+        </div>
-       </footer>
-     </main>
- 
-     <script>
--      const board = document.querySelector(".board");
--      const flowLine = document.getElementById("flowLine");
-+      const board = document.getElementById("board");
-+      const nodesLayer = document.getElementById("nodesLayer");
-+      const lineLayer = document.getElementById("lineLayer");
-+      const activeLine = document.getElementById("activeLine");
-+      const committedLines = document.getElementById("committedLines");
-       const banner = document.getElementById("banner");
-       const resetButton = document.getElementById("resetButton");
--      const notes = {
--        do: document.getElementById("note-do"),
--        mi: document.getElementById("note-mi"),
--        sol: document.getElementById("note-sol")
-+      const soundToggle = document.getElementById("soundToggle");
-+      const keySelect = document.getElementById("keySelect");
-+      const statusText = document.getElementById("statusText");
-+      const countEls = {
-+        I: document.getElementById("countI"),
-+        IV: document.getElementById("countIV"),
-+        V: document.getElementById("countV")
-       };
--      const order = ["do", "mi", "sol"];
-+
-+      const keyNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-+      const solfege = [
-+        { id: "do", label: "도", color: "#38bdf8" },
-+        { id: "re", label: "레", color: "#818cf8" },
-+        { id: "mi", label: "미", color: "#f472b6" },
-+        { id: "fa", label: "파", color: "#fb923c" },
-+        { id: "sol", label: "솔", color: "#22c55e" },
-+        { id: "la", label: "라", color: "#eab308" },
-+        { id: "ti", label: "시", color: "#f43f5e" }
-+      ];
-+
-+      const positions = {
-+        do: { col: 1, row: 6 },
-+        re: { col: 3, row: 6 },
-+        mi: { col: 5, row: 6 },
-+        fa: { col: 1, row: 3 },
-+        sol: { col: 3, row: 3 },
-+        la: { col: 5, row: 3 },
-+        ti: { col: 6, row: 1 }
-+      };
-+
-+      const chordRules = [
-+        { id: "I", label: "으뜸화음 완성!", notes: ["do", "mi", "sol"] },
-+        { id: "IV", label: "버금딸림화음 완성!", notes: ["fa", "la", "do"] },
-+        { id: "V", label: "딸림화음 완성!", notes: ["sol", "ti", "re"] }
-+      ];
-+
-       const state = {
-         isDrawing: false,
-+        points: [],
-         sequence: [],
--        points: []
-+        counts: { I: 0, IV: 0, V: 0 },
-+        key: "C",
-+        soundOn: true
-       };
-+
-       let audioContext;
-+      let noteFrequencies = {};
-+      let bannerTimeout;
- 
--      function getCenter(element) {
--        const boardRect = board.getBoundingClientRect();
--        const rect = element.getBoundingClientRect();
--        return {
--          x: rect.left - boardRect.left + rect.width / 2,
--          y: rect.top - boardRect.top + rect.height / 2
-+      function populateKeys() {
-+        keyNames.forEach((name) => {
-+          const option = document.createElement("option");
-+          option.value = name;
-+          option.textContent = name;
-+          keySelect.append(option);
-+        });
-+        keySelect.value = state.key;
-+      }
-+
-+      function getBoardMetrics() {
-+        const rect = board.getBoundingClientRect();
-+        const pad = parseFloat(getComputedStyle(board).getPropertyValue("--pad"));
-+        const inner = {
-+          left: pad,
-+          top: pad,
-+          width: rect.width - pad * 2,
-+          height: rect.height - pad * 2
-         };
-+        return { rect, inner };
-+      }
-+
-+      function layoutNodes() {
-+        const { rect, inner } = getBoardMetrics();
-+        lineLayer.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
-+        nodesLayer.innerHTML = "";
-+        solfege.forEach((note) => {
-+          const node = document.createElement("div");
-+          const { col, row } = positions[note.id];
-+          const x = inner.left + (inner.width / 7) * col;
-+          const y = inner.top + (inner.height / 7) * row;
-+          node.className =
-+            "note absolute flex h-12 w-12 items-center justify-center rounded-full text-base font-bold text-white shadow";
-+          node.style.backgroundColor = note.color;
-+          node.style.left = `${x}px`;
-+          node.style.top = `${y}px`;
-+          node.dataset.note = note.id;
-+          node.textContent = note.label;
-+          nodesLayer.append(node);
-+        });
-       }
- 
--      function updateLine() {
-+      function getNodeCenters() {
-+        const centers = {};
-+        const boardRect = board.getBoundingClientRect();
-+        nodesLayer.querySelectorAll(".note").forEach((node) => {
-+          const rect = node.getBoundingClientRect();
-+          centers[node.dataset.note] = {
-+            x: rect.left - boardRect.left + rect.width / 2,
-+            y: rect.top - boardRect.top + rect.height / 2
-+          };
-+        });
-+        return centers;
-+      }
-+
-+      function updateActiveLine() {
-+        // active polyline: path 노드 좌표 + 현재 포인터
-         const points = state.points.map((point) => `${point.x},${point.y}`).join(" ");
--        flowLine.setAttribute("points", points);
-+        activeLine.setAttribute("points", points);
-       }
- 
--      function resetFlow() {
--        state.isDrawing = false;
--        state.sequence = [];
-+      function clearActiveLine() {
-         state.points = [];
--        updateLine();
-+        state.sequence = [];
-+        updateActiveLine();
-       }
- 
--      function showBanner(message, tone) {
--        banner.textContent = message;
--        banner.classList.remove("hidden");
--        banner.classList.toggle("bg-blue-500", tone === "success");
--        banner.classList.toggle("bg-red-500", tone === "fail");
-+      function commitLine(color) {
-+        if (state.points.length < 2) return;
-+        const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-+        polyline.setAttribute("fill", "none");
-+        polyline.setAttribute("stroke", color);
-+        polyline.setAttribute("stroke-width", "16");
-+        polyline.setAttribute("stroke-linecap", "round");
-+        polyline.setAttribute("stroke-linejoin", "round");
-+        polyline.setAttribute("points", state.points.map((point) => `${point.x},${point.y}`).join(" "));
-+        committedLines.append(polyline);
-       }
- 
--      function hideBanner() {
--        banner.classList.add("hidden");
-+      function showBanner(message) {
-+        banner.textContent = message;
-+        banner.classList.remove("hidden");
-+        clearTimeout(bannerTimeout);
-+        bannerTimeout = setTimeout(() => {
-+          banner.classList.add("hidden");
-+        }, 1000);
-       }
- 
-       function ensureAudioContext() {
-+        if (!state.soundOn) return;
-         if (!audioContext) {
-           audioContext = new (window.AudioContext || window.webkitAudioContext)();
-         }
-         if (audioContext.state === "suspended") {
-           audioContext.resume();
-         }
-       }
- 
--      function playChord() {
-+      function playTone(freq, duration, gainLevel = 0.2) {
-+        // 단음 재생: sine, 0.12초
-+        if (!state.soundOn) return;
-         ensureAudioContext();
-         if (!audioContext) return;
-         const now = audioContext.currentTime;
--        const freqs = [261.63, 329.63, 392];
--        freqs.forEach((freq) => {
--          const osc = audioContext.createOscillator();
--          const gain = audioContext.createGain();
--          osc.type = "sine";
--          osc.frequency.value = freq;
--          gain.gain.value = 0;
--          osc.connect(gain);
--          gain.connect(audioContext.destination);
--          gain.gain.linearRampToValueAtTime(0.25, now + 0.02);
--          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
--          osc.start(now);
--          osc.stop(now + 0.4);
-+        const osc = audioContext.createOscillator();
-+        const gain = audioContext.createGain();
-+        osc.type = "sine";
-+        osc.frequency.value = freq;
-+        gain.gain.value = 0;
-+        osc.connect(gain);
-+        gain.connect(audioContext.destination);
-+        gain.gain.linearRampToValueAtTime(gainLevel, now + 0.02);
-+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-+        osc.start(now);
-+        osc.stop(now + duration + 0.05);
-+      }
-+
-+      function playChord(notes) {
-+        // 화음 재생: 3음 동시 0.45초
-+        notes.forEach((note) => {
-+          playTone(noteFrequencies[note], 0.45, 0.18);
-+        });
-+      }
-+
-+      function updateFrequencies() {
-+        const keyIndex = keyNames.indexOf(state.key);
-+        const baseMidi = 60 + keyIndex;
-+        const intervals = [0, 2, 4, 5, 7, 9, 11];
-+        noteFrequencies = {};
-+        solfege.forEach((note, idx) => {
-+          const midi = baseMidi + intervals[idx];
-+          noteFrequencies[note.id] = 440 * Math.pow(2, (midi - 69) / 12);
-         });
-       }
- 
--      function handleSuccess() {
--        showBanner("I chord 완성", "success");
--        playChord();
-+      function checkChordCompletion() {
-+        const uniqueNotes = new Set(state.sequence);
-+        const matches = chordRules.filter((rule) => rule.notes.every((note) => uniqueNotes.has(note)));
-+        if (matches.length === 0) return null;
-+        return matches;
-+      }
-+
-+      function updateCounters() {
-+        countEls.I.textContent = state.counts.I;
-+        countEls.IV.textContent = state.counts.IV;
-+        countEls.V.textContent = state.counts.V;
-+      }
-+
-+      function resetAll() {
-+        clearActiveLine();
-+        committedLines.innerHTML = "";
-+        state.counts = { I: 0, IV: 0, V: 0 };
-+        updateCounters();
-+        statusText.textContent = "드래그로 음을 연결하세요";
-+        banner.classList.add("hidden");
-       }
- 
--      function handleFail(message) {
--        showBanner(message, "fail");
--        resetFlow();
-+      function getPointerPosition(event) {
-+        const rect = board.getBoundingClientRect();
-+        return {
-+          x: event.clientX - rect.left,
-+          y: event.clientY - rect.top
-+        };
-+      }
-+
-+      function findSnappedNode(pointer, centers) {
-+        // 스냅 판정: 반경 22px 안이면 노드로 스냅
-+        const radius = 22;
-+        let snapped = null;
-+        Object.entries(centers).forEach(([note, center]) => {
-+          const distance = Math.hypot(pointer.x - center.x, pointer.y - center.y);
-+          if (distance <= radius) {
-+            snapped = { note, center };
-+          }
-+        });
-+        return snapped;
-       }
- 
--      function handleStart(pointer) {
--        hideBanner();
-+      function handleStart(event) {
-+        // pointerdown이 노드 위에서 시작하면 드로잉 시작
-+        const pointer = getPointerPosition(event);
-+        const centers = getNodeCenters();
-+        const snapped = findSnappedNode(pointer, centers);
-+        if (!snapped) return;
-         ensureAudioContext();
--        const startCenter = getCenter(notes.do);
--        const distance = Math.hypot(pointer.x - startCenter.x, pointer.y - startCenter.y);
--        if (distance > 30) {
--          handleFail("도에서 시작해 주세요!");
--          return;
--        }
-         state.isDrawing = true;
--        state.sequence = ["do"];
--        state.points = [startCenter, pointer];
--        updateLine();
-+        state.sequence = [snapped.note];
-+        state.points = [snapped.center, snapped.center];
-+        activeLine.setAttribute("stroke", solfege.find((note) => note.id === snapped.note).color);
-+        updateActiveLine();
-+        playTone(noteFrequencies[snapped.note], 0.12);
-+        statusText.textContent = "연결 중...";
-       }
- 
--      function handleMove(pointer) {
-+      function handleMove(event) {
-         if (!state.isDrawing) return;
-+        const pointer = getPointerPosition(event);
-+        const centers = getNodeCenters();
-         state.points[state.points.length - 1] = pointer;
--        updateLine();
--        const expected = order[state.sequence.length];
--        if (!expected) return;
--        const targetCenter = getCenter(notes[expected]);
--        const distance = Math.hypot(pointer.x - targetCenter.x, pointer.y - targetCenter.y);
--        if (distance <= 30) {
--          state.sequence.push(expected);
--          state.points[state.points.length - 1] = targetCenter;
--          state.points.push(targetCenter);
--          updateLine();
--          if (state.sequence.length === order.length) {
--            state.isDrawing = false;
--            handleSuccess();
--          }
-+        updateActiveLine();
-+        const snapped = findSnappedNode(pointer, centers);
-+        if (snapped && !state.sequence.includes(snapped.note)) {
-+          // 스냅된 노드를 path에 추가 + 단음 재생
-+          state.sequence.push(snapped.note);
-+          state.points[state.points.length - 1] = snapped.center;
-+          state.points.push(snapped.center);
-+          updateActiveLine();
-+          playTone(noteFrequencies[snapped.note], 0.12);
-         }
-       }
- 
-       function handleEnd() {
-         if (!state.isDrawing) return;
-         state.isDrawing = false;
--        handleFail("도 → 미 → 솔 순서로 연결해요!");
--      }
--
--      function getPointerPosition(event) {
--        const rect = board.getBoundingClientRect();
--        return {
--          x: event.clientX - rect.left,
--          y: event.clientY - rect.top
--        };
-+        const matches = checkChordCompletion();
-+        if (matches) {
-+          matches.forEach((match) => {
-+            state.counts[match.id] += 1;
-+          });
-+          updateCounters();
-+          showBanner(matches[0].label);
-+          playChord(matches[0].notes);
-+          statusText.textContent = "화음 완성!";
-+        } else {
-+          statusText.textContent = "드래그로 음을 연결하세요";
-+        }
-+        // 드래그 종료 시 라인을 확정하고 다음 입력을 위해 초기화
-+        const color = matches ? "#22d3ee" : "#94a3b8";
-+        commitLine(color);
-+        clearActiveLine();
-       }
- 
-       board.addEventListener("pointerdown", (event) => {
-         board.setPointerCapture(event.pointerId);
--        handleStart(getPointerPosition(event));
-+        handleStart(event);
-       });
- 
-       board.addEventListener("pointermove", (event) => {
--        handleMove(getPointerPosition(event));
-+        handleMove(event);
-       });
- 
-       board.addEventListener("pointerup", () => {
-         handleEnd();
-       });
- 
-       board.addEventListener("pointerleave", () => {
-         handleEnd();
-       });
- 
-       resetButton.addEventListener("click", () => {
--        hideBanner();
--        resetFlow();
-+        resetAll();
-       });
-+
-+      soundToggle.addEventListener("click", () => {
-+        state.soundOn = !state.soundOn;
-+        soundToggle.textContent = state.soundOn ? "Sound ON" : "Sound OFF";
-+      });
-+
-+      keySelect.addEventListener("change", (event) => {
-+        state.key = event.target.value;
-+        updateFrequencies();
-+      });
-+
-+      window.addEventListener("resize", () => {
-+        layoutNodes();
-+      });
-+
-+      populateKeys();
-+      updateFrequencies();
-+      layoutNodes();
-+      updateCounters();
-     </script>
-   </body>
- </html>
- 
-EOF
-)
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Draw Chord</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .board { touch-action: none; }
+    .toast { transition: opacity .15s ease, transform .15s ease; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <main class="mx-auto w-full max-w-5xl p-4 md:p-6 space-y-4">
+    <!-- Top bar -->
+    <header class="rounded-2xl bg-white shadow p-4 flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-xl font-semibold">Draw Chord</h1>
+      <div class="flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm font-semibold">
+          <span>Key</span>
+          <select id="keySelect" class="rounded-full border border-slate-200 bg-white px-2 py-1 text-sm"></select>
+        </label>
+        <button id="soundToggle" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">
+          Sound ON
+        </button>
+        <button id="resetButton" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
+          Reset
+        </button>
+      </div>
+    </header>
+
+    <!-- Board -->
+    <section class="flex flex-col items-center gap-3">
+      <div class="relative w-full max-w-[560px] aspect-square rounded-2xl bg-white shadow border border-slate-200 overflow-hidden board" id="board">
+        <!-- subtle grid -->
+        <div id="grid" class="absolute inset-0"></div>
+
+        <!-- svg lines -->
+        <svg id="svg" class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 520 520" preserveAspectRatio="none">
+          <g id="committed"></g>
+          <polyline id="active" fill="none" stroke="#0ea5e9" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" points=""></polyline>
+        </svg>
+
+        <!-- nodes -->
+        <div id="nodes" class="absolute inset-0"></div>
+
+        <!-- toast -->
+        <div id="toast" class="toast absolute top-3 left-1/2 -translate-x-1/2 opacity-0 -translate-y-2 px-4 py-2 rounded-full bg-emerald-500 text-white text-sm font-semibold shadow">
+          완성!
+        </div>
+      </div>
+
+      <div class="w-full max-w-[560px] rounded-2xl bg-white shadow p-4 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold">
+        <div id="status" class="text-slate-600">노드에서 드래그를 시작해 연결하세요.</div>
+        <div class="flex gap-2">
+          <span class="rounded-full bg-slate-100 px-3 py-1">I <span id="cI">0</span></span>
+          <span class="rounded-full bg-slate-100 px-3 py-1">IV <span id="cIV">0</span></span>
+          <span class="rounded-full bg-slate-100 px-3 py-1">V <span id="cV">0</span></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+  // =========================
+  // 0) DATA
+  // =========================
+  const keyNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const scaleIntervals = { do:0, re:2, mi:4, fa:5, sol:7, la:9, ti:11 };
+
+  // Flow Free 느낌: 같은 음 노드가 "여러 개" 존재 (각각 고유 id)
+  // 8x8 그리드 좌표(0~7), 보기 좋게 정렬 배치
+  const nodesData = [
+    { id:"do1", note:"do", label:"도", col:1, row:6, color:"#0ea5e9" },
+    { id:"do2", note:"do", label:"도", col:6, row:6, color:"#0ea5e9" },
+
+    { id:"re1", note:"re", label:"레", col:3, row:6, color:"#6366f1" },
+    { id:"re2", note:"re", label:"레", col:6, row:3, color:"#6366f1" },
+
+    { id:"mi1", note:"mi", label:"미", col:5, row:6, color:"#ec4899" },
+    { id:"mi2", note:"mi", label:"미", col:1, row:1, color:"#ec4899" },
+
+    { id:"fa1", note:"fa", label:"파", col:1, row:3, color:"#fb923c" },
+    { id:"fa2", note:"fa", label:"파", col:5, row:1, color:"#fb923c" },
+
+    { id:"sol1", note:"sol", label:"솔", col:3, row:3, color:"#22c55e" },
+    { id:"sol2", note:"sol", label:"솔", col:7, row:4, color:"#22c55e" },
+
+    { id:"la1", note:"la", label:"라", col:5, row:3, color:"#eab308" },
+    { id:"la2", note:"la", label:"라", col:2, row:4, color:"#eab308" },
+
+    { id:"ti1", note:"ti", label:"시", col:6, row:1, color:"#ef4444" },
+    { id:"ti2", note:"ti", label:"시", col:7, row:1, color:"#ef4444" },
+  ];
+
+  const chordRules = [
+    { id:"I",  msg:"으뜸화음 완성!", notes:["do","mi","sol"] },
+    { id:"IV", msg:"버금딸림화음 완성!", notes:["fa","la","do"] },
+    { id:"V",  msg:"딸림화음 완성!", notes:["sol","ti","re"] },
+  ];
+
+  // =========================
+  // 1) DOM
+  // =========================
+  const board = document.getElementById("board");
+  const grid = document.getElementById("grid");
+  const nodesLayer = document.getElementById("nodes");
+  const svg = document.getElementById("svg");
+  const active = document.getElementById("active");
+  const committed = document.getElementById("committed");
+
+  const toast = document.getElementById("toast");
+  const statusEl = document.getElementById("status");
+
+  const keySelect = document.getElementById("keySelect");
+  const soundToggle = document.getElementById("soundToggle");
+  const resetButton = document.getElementById("resetButton");
+  const cI = document.getElementById("cI");
+  const cIV = document.getElementById("cIV");
+  const cV = document.getElementById("cV");
+
+  // =========================
+  // 2) GRID (white background + light lines)
+  // =========================
+  function renderGrid(){
+    grid.innerHTML = "";
+    grid.className = "absolute inset-0 grid";
+    grid.style.gridTemplateColumns = "repeat(8, 1fr)";
+    grid.style.gridTemplateRows = "repeat(8, 1fr)";
+    for(let i=0;i<64;i++){
+      const cell = document.createElement("div");
+      cell.className = "border border-slate-100";
+      grid.appendChild(cell);
+    }
+  }
+
+  // =========================
+  // 3) COORDS (520x520 fixed)
+  // =========================
+  const VB = 520;
+  const PAD = 42; // 안쪽 여백 (보기 좋게)
+  const CELL = (VB - PAD*2) / 7; // 0..7 교차점
+
+  function gridToVB(col,row){
+    return { x: PAD + col*CELL, y: PAD + row*CELL };
+  }
+  function boardPxToVB(px,py){
+    const r = board.getBoundingClientRect();
+    return { x: (px / r.width) * VB, y: (py / r.height) * VB };
+  }
+  function pointerToVB(e){
+    const r = board.getBoundingClientRect();
+    const px = e.clientX - r.left;
+    const py = e.clientY - r.top;
+    return boardPxToVB(px,py);
+  }
+  function vbToPercent(v){
+    return (v / VB) * 100;
+  }
+
+  // centers lookup (no DOM-measure)
+  const centers = {};
+  nodesData.forEach(n => { centers[n.id] = gridToVB(n.col,n.row); });
+
+  // =========================
+  // 4) RENDER NODES
+  // =========================
+  function renderNodes(){
+    nodesLayer.innerHTML = "";
+    nodesData.forEach(n => {
+      const c = centers[n.id];
+      const btn = document.createElement("button");
+      btn.className = "absolute note flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full text-white font-bold shadow select-none";
+      btn.style.left = vbToPercent(c.x) + "%";
+      btn.style.top  = vbToPercent(c.y) + "%";
+      btn.style.transform = "translate(-50%,-50%)";
+      btn.style.background = n.color;
+      btn.dataset.id = n.id;
+      btn.dataset.note = n.note;
+      btn.textContent = n.label;
+      nodesLayer.appendChild(btn);
+    });
+  }
+
+  // =========================
+  // 5) AUDIO (WebAudio)
+  // =========================
+  let audioCtx = null;
+  let soundOn = true;
+  let currentKey = "C";
+  let freqs = {}; // note -> freq
+
+  function ensureAudio(){
+    if(!soundOn) return;
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+  }
+  function midiToFreq(m){ return 440 * Math.pow(2, (m-69)/12); }
+
+  function updateFreqs(){
+    const keyIndex = keyNames.indexOf(currentKey);
+    const baseMidi = 60 + keyIndex; // Do = selected key at around 4th octave
+    freqs = {};
+    Object.keys(scaleIntervals).forEach(k=>{
+      const midi = baseMidi + scaleInterval
