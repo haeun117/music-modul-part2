@@ -1,385 +1,578 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Harmony Stack – Play</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .tower-shake { animation: shake 0.18s infinite; }
-    @keyframes shake {
-      0% { transform: translate(0,0) rotate(0deg); }
-      25% { transform: translate(1px,0) rotate(0.2deg); }
-      50% { transform: translate(0,1px) rotate(-0.2deg); }
-      75% { transform: translate(-1px,0) rotate(0.2deg); }
-      100% { transform: translate(0,0) rotate(0deg); }
-    }
-    .no-select { user-select: none; -webkit-user-select: none; }
-  </style>
-</head>
-
-<body class="min-h-screen bg-slate-50 no-select">
-  <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
-    <!-- Top bar -->
-    <div class="flex items-center justify-between gap-3">
-      <a class="text-sm underline text-slate-600" href="./index.html">← Mode Select</a>
-      <div class="text-sm text-slate-600">
-        <span id="modeLabel" class="font-medium text-slate-800">중학년</span>
-        <span class="mx-2">·</span>
-        <span id="missionLabel">미션 OFF</span>
-        <span class="mx-2">·</span>
-        <span id="soundLabel">사운드 ON</span>
-      </div>
-    </div>
-
-    <!-- HUD -->
-    <section class="grid md:grid-cols-3 gap-3">
-      <div class="rounded-2xl border bg-white p-4 shadow-sm">
-        <div class="text-xs text-slate-500">Floor</div>
-        <div class="text-3xl font-bold" id="floorText">0</div>
-        <div class="mt-2 text-sm text-slate-600" id="goalText"></div>
-      </div>
-
-      <div class="rounded-2xl border bg-white p-4 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="text-xs text-slate-500">Stability</div>
-          <div class="text-xs text-slate-500" id="stabilityText">100</div>
-        </div>
-        <div class="mt-2 h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-          <div id="stabilityBar" class="h-full w-full bg-black"></div>
-        </div>
-        <div class="mt-2 text-sm text-slate-600" id="hintText">화면을 탭해서 블록을 놓아봐!</div>
-      </div>
-
-      <div class="rounded-2xl border bg-white p-4 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="text-xs text-slate-500">Timer</div>
-          <div class="text-xs text-slate-500" id="timerText">—</div>
-        </div>
-        <div class="mt-3 flex gap-2">
-          <button id="pauseBtn" class="px-4 py-2 rounded-xl border bg-white">일시정지</button>
-          <button id="resetBtn" class="px-4 py-2 rounded-xl border bg-white">리셋</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Main layout -->
-    <section class="grid lg:grid-cols-[1fr_320px] gap-4">
-      <!-- Game canvas -->
-      <div class="rounded-2xl border bg-white shadow-sm overflow-hidden">
-        <div class="px-4 py-3 border-b flex items-center justify-between">
-          <div class="font-semibold">Harmony Stack</div>
-          <div class="text-xs text-slate-500">Tap / Click to drop</div>
-        </div>
-
-        <div id="gameArea" class="relative h-[520px] bg-gradient-to-b from-slate-50 to-white">
-          <!-- Tower container -->
-          <div id="tower" class="absolute left-1/2 bottom-10 -translate-x-1/2 w-[280px]">
-            <!-- blocks will be appended here -->
-          </div>
-
-          <!-- Moving block -->
-          <div id="moving" class="absolute bottom-10 left-1/2 -translate-x-1/2">
-            <div id="movingBlock" class="h-10 rounded-xl bg-slate-900 shadow-md"></div>
-          </div>
-
-          <!-- Banner -->
-          <div id="banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-2xl bg-black text-white text-sm shadow-lg">
-            배너
-          </div>
-        </div>
-      </div>
-
-      <!-- Right panel -->
-      <aside class="rounded-2xl border bg-white shadow-sm p-4 space-y-4">
-        <div>
-          <div class="text-sm font-semibold">고학년 선택</div>
-          <p class="text-xs text-slate-500">고학년 모드에서만 A/B/C 선택이 열립니다.</p>
-          <div class="mt-2 flex gap-2">
-            <button class="pickBtn px-3 py-2 rounded-xl border bg-white" data-pick="A">A</button>
-            <button class="pickBtn px-3 py-2 rounded-xl border bg-white" data-pick="B">B</button>
-            <button class="pickBtn px-3 py-2 rounded-xl border bg-white" data-pick="C">C</button>
-          </div>
-        </div>
-
-        <div>
-          <div class="text-sm font-semibold">누적 ‘음’</div>
-          <p class="text-xs text-slate-500">실제 사운드는 나중에. 지금은 쌓인 개수만 표시.</p>
-          <div id="notesRow" class="mt-2 flex flex-wrap gap-2"></div>
-        </div>
-
-        <div class="pt-2 border-t">
-          <div class="text-sm font-semibold">설정값</div>
-          <pre id="debug" class="mt-2 text-xs bg-slate-50 rounded-xl p-3 overflow-auto"></pre>
-        </div>
-      </aside>
-    </section>
-  </main>
-
-<script>
-  // ---------- Read settings ----------
-  const params = new URLSearchParams(location.search);
-  const cfg = {
-    grade: params.get("grade") || "mid",      // low | mid | high
-    mission: Number(params.get("mission") || "0"),
-    time: Number(params.get("time") || "0"),  // minutes: 5/10/15
-    sound: Number(params.get("sound") || "1"),
-    classmode: Number(params.get("classmode") || "0"),
-  };
-  document.getElementById("debug").textContent = JSON.stringify(cfg, null, 2);
-
-  const gradeName = cfg.grade === "low" ? "저학년" : cfg.grade === "high" ? "고학년" : "중학년";
-  document.getElementById("modeLabel").textContent = gradeName;
-  document.getElementById("missionLabel").textContent = cfg.mission ? "미션 ON" : "미션 OFF";
-  document.getElementById("soundLabel").textContent = cfg.sound ? "사운드 ON" : "사운드 OFF";
-  document.getElementById("hintText").textContent = cfg.classmode ? "탭해서 놓기" : "화면을 탭해서 블록을 놓아봐!";
-
-  // Mission goal text (text only for now)
-  const goalText = document.getElementById("goalText");
-  if (!cfg.mission) goalText.textContent = "";
-  else if (cfg.grade === "low") goalText.textContent = "목표: 10층 쌓기";
-  else if (cfg.grade === "mid") goalText.textContent = "목표: 흔들림 없이 8층 유지";
-  else goalText.textContent = "목표: ‘밝은 화음’ 8층 쌓기 (텍스트)";
-
-  // ---------- Game constants ----------
-  const tower = document.getElementById("tower");
-  const moving = document.getElementById("moving");
-  const movingBlock = document.getElementById("movingBlock");
-  const banner = document.getElementById("banner");
-
-  const floorText = document.getElementById("floorText");
-  const stabilityText = document.getElementById("stabilityText");
-  const stabilityBar = document.getElementById("stabilityBar");
-  const notesRow = document.getElementById("notesRow");
-
-  let paused = false;
-  let floor = 0;
-  let stability = 100;
-
-  // block geometry (px)
-  const HEIGHT = 40;
-  const BASE_WIDTH = 220;
-  let currentWidth = BASE_WIDTH;
-
-  // x position in px relative to tower container center
-  let x = 0;
-  let dir = 1;
-  let speed = 1.6; // px per frame-ish (adjusted in RAF)
-  let lastTime = performance.now();
-
-  // last placed x (for overlap)
-  let lastX = 0;
-
-  // high-grade pick
-  let pick = "A";
-  const pickBtns = Array.from(document.querySelectorAll(".pickBtn"));
-  function renderPickUI() {
-    const enabled = cfg.grade === "high";
-    pickBtns.forEach(btn => {
-      btn.disabled = !enabled;
-      btn.classList.toggle("opacity-40", !enabled);
-      btn.classList.toggle("cursor-not-allowed", !enabled);
-      const isOn = btn.dataset.pick === pick;
-      btn.classList.toggle("bg-black", isOn);
-      btn.classList.toggle("text-white", isOn);
-      btn.classList.toggle("border-black", isOn);
-    });
-  }
-  pickBtns.forEach(btn => btn.addEventListener("click", () => {
-    if (cfg.grade !== "high") return;
-    pick = btn.dataset.pick;
-    renderPickUI();
-    // change moving color slightly by pick
-    movingBlock.classList.remove("bg-slate-900","bg-slate-700","bg-slate-500");
-    movingBlock.classList.add(pick === "A" ? "bg-slate-900" : pick === "B" ? "bg-slate-700" : "bg-slate-500");
-  }));
-  renderPickUI();
-
-  // ---------- Timer ----------
-  let timerSec = cfg.time ? cfg.time * 60 : null;
-  let timerInterval = null;
-  const timerText = document.getElementById("timerText");
-
-  function formatTime(s) {
-    const m = Math.floor(s / 60);
-    const r = s % 60;
-    return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
-  }
-  function startTimer() {
-    if (!timerSec) { timerText.textContent = "—"; return; }
-    timerText.textContent = formatTime(timerSec);
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      if (paused) return;
-      timerSec -= 1;
-      timerText.textContent = formatTime(Math.max(0, timerSec));
-      if (timerSec <= 0) {
-        showBanner("시간 종료! (result는 다음 단계)");
-        clearInterval(timerInterval);
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Harmony Stack | Stack Play</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            borderRadius: {
+              "2xl": "1.25rem"
+            },
+            colors: {
+              ink: "rgb(var(--color-ink) / <alpha-value>)",
+              surface: "rgb(var(--color-surface) / <alpha-value>)",
+              muted: "rgb(var(--color-muted) / <alpha-value>)",
+              accent: "rgb(var(--color-accent) / <alpha-value>)",
+              accentStrong: "rgb(var(--color-accent-strong) / <alpha-value>)",
+              toneA: "rgb(var(--color-tone-a) / <alpha-value>)",
+              toneB: "rgb(var(--color-tone-b) / <alpha-value>)",
+              toneC: "rgb(var(--color-tone-c) / <alpha-value>)"
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+        --color-ink: 15 23 42;
+        --color-surface: 248 250 252;
+        --color-muted: 226 232 240;
+        --color-accent: 78 156 255;
+        --color-accent-strong: 37 99 235;
+        --color-tone-a: 96 165 250;
+        --color-tone-b: 248 113 113;
+        --color-tone-c: 250 204 21;
       }
-    }, 1000);
-  }
-  startTimer();
 
-  // ---------- UI helpers ----------
-  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
-
-  function setStability(v) {
-    stability = clamp(v, 0, 100);
-    stabilityText.textContent = Math.round(stability);
-    stabilityBar.style.width = `${stability}%`;
-  }
-  setStability(100);
-
-  function showBanner(text) {
-    banner.textContent = text;
-    banner.classList.remove("hidden");
-    clearTimeout(showBanner._t);
-    showBanner._t = setTimeout(() => banner.classList.add("hidden"), 1400);
-  }
-
-  function addNoteDot() {
-    const dot = document.createElement("div");
-    dot.className = "h-7 w-7 rounded-full bg-slate-900";
-    if (cfg.grade === "high") {
-      dot.className = "h-7 w-7 rounded-full " + (pick === "A" ? "bg-slate-900" : pick === "B" ? "bg-slate-700" : "bg-slate-500");
-      dot.title = pick;
-    }
-    notesRow.appendChild(dot);
-  }
-
-  function updateMovingBlock() {
-    moving.style.bottom = (40 + floor * HEIGHT) + "px";
-    movingBlock.style.width = currentWidth + "px";
-    moving.style.transform = `translateX(calc(-50% + ${x}px))`;
-  }
-
-  // ---------- Core drop logic ----------
-  function drop() {
-    if (paused) return;
-
-    // low-grade snap assist: reduce error by 50%
-    let snappedX = x;
-    if (cfg.grade === "low") {
-      const err = x - lastX;
-      snappedX = lastX + err * 0.5;
-    }
-
-    // compute overlap (like Stack)
-    const diff = snappedX - lastX;
-    const overlap = currentWidth - Math.abs(diff);
-
-    // If overlap <= 0 : keep playing but mark as fail state
-    if (overlap <= 8) {
-      setStability(stability - 12);
-      tower.classList.add("tower-shake");
-      showBanner("미션 실패! (계속 가능)");
-      // shrink hard but not zero
-      currentWidth = Math.max(24, Math.floor(currentWidth * 0.6));
-    } else {
-      // normal placement
-      const newBlock = document.createElement("div");
-      newBlock.className = "h-10 rounded-xl shadow-md";
-      // color by pick (only visual)
-      const col = (cfg.grade === "high")
-        ? (pick === "A" ? "bg-slate-900" : pick === "B" ? "bg-slate-700" : "bg-slate-500")
-        : "bg-slate-900";
-      newBlock.classList.add(col);
-
-      newBlock.style.width = overlap + "px";
-      // position in tower container: center + adjusted x
-      const placedX = lastX + diff * 0.5; // keep center aligned to overlap
-      newBlock.style.transform = `translateX(${placedX}px)`;
-
-      tower.appendChild(newBlock);
-
-      // update stats
-      floor += 1;
-      floorText.textContent = floor;
-      addNoteDot();
-
-      // stability drop proportional to misalignment
-      const penalty = clamp(Math.abs(diff) / 12, 0, 10);
-      setStability(stability - penalty);
-
-      // shake threshold
-      if (Math.abs(diff) > 38) tower.classList.add("tower-shake");
-      else tower.classList.remove("tower-shake");
-
-      // update for next
-      currentWidth = overlap;
-      lastX = placedX;
-
-      // simple mission success banner (text only)
-      if (cfg.mission) {
-        if (cfg.grade === "low" && floor === 10) showBanner("성공! 10층 달성 🎉");
-        if (cfg.grade === "mid" && floor === 8 && !tower.classList.contains("tower-shake")) showBanner("성공! 흔들림 없이 8층 🎉");
-        if (cfg.grade === "high" && floor === 8) showBanner("성공! 8층 달성 🎉");
+      body {
+        margin: 0;
+        font-family: "Pretendard", "Inter", system-ui, sans-serif;
+        background: rgb(var(--color-surface));
+        color: rgb(var(--color-ink));
+        min-height: 100vh;
       }
-    }
 
-    // reset moving block state
-    x = 0;
-    dir = Math.random() > 0.5 ? 1 : -1;
-    speed = clamp(speed + 0.05, 1.4, 2.6);
-    updateMovingBlock();
-  }
+      .tower-area {
+        position: relative;
+        height: 520px;
+        overflow: hidden;
+        border-radius: 1.25rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+        border: 1px solid rgb(var(--color-muted));
+      }
 
-  // tap/click to drop
-  document.getElementById("gameArea").addEventListener("pointerdown", (e) => {
-    // prevent selecting buttons in side panel
-    if (e.target.closest("button")) return;
-    drop();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.code === "Space") { e.preventDefault(); drop(); }
-  });
+      .block {
+        position: absolute;
+        height: 36px;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+      }
 
-  // pause / reset
-  document.getElementById("pauseBtn").addEventListener("click", () => {
-    paused = !paused;
-    document.getElementById("pauseBtn").textContent = paused ? "재개" : "일시정지";
-  });
-  document.getElementById("resetBtn").addEventListener("click", () => resetGame());
+      .shake {
+        animation: shake 0.2s ease-in-out 3;
+      }
 
-  function resetGame() {
-    paused = false;
-    document.getElementById("pauseBtn").textContent = "일시정지";
-    floor = 0;
-    floorText.textContent = "0";
-    setStability(100);
-    tower.classList.remove("tower-shake");
-    tower.innerHTML = "";
-    notesRow.innerHTML = "";
-    currentWidth = BASE_WIDTH;
-    lastX = 0;
-    x = 0;
-    dir = 1;
-    speed = 1.6;
-    // timer reset
-    timerSec = cfg.time ? cfg.time * 60 : null;
-    startTimer();
-    showBanner("리셋!");
-    updateMovingBlock();
-  }
+      @keyframes shake {
+        0% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-6px);
+        }
+        50% {
+          transform: translateX(6px);
+        }
+        75% {
+          transform: translateX(-4px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
 
-  // ---------- Animation loop ----------
-  function tick(t) {
-    const dt = Math.min(32, t - lastTime);
-    lastTime = t;
-    if (!paused) {
-      // bounds based on width
-      const bound = 120; // px
-      x += dir * speed * (dt / 16);
-      if (x > bound) { x = bound; dir = -1; }
-      if (x < -bound) { x = -bound; dir = 1; }
-      updateMovingBlock();
-    }
-    requestAnimationFrame(tick);
-  }
-  updateMovingBlock();
-  requestAnimationFrame(tick);
-</script>
-</body>
+      .confetti::before,
+      .confetti::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 10% 20%, #fbbf24 0 6px, transparent 7px),
+          radial-gradient(circle at 80% 30%, #34d399 0 5px, transparent 6px),
+          radial-gradient(circle at 30% 70%, #60a5fa 0 6px, transparent 7px),
+          radial-gradient(circle at 70% 80%, #f472b6 0 5px, transparent 6px);
+        opacity: 0.5;
+        animation: confetti 1.2s ease-in-out infinite;
+      }
+
+      @keyframes confetti {
+        0% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(10px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="min-h-screen px-6 py-8">
+      <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        <header class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold text-slate-500">Harmony Stack</p>
+              <h1 class="text-3xl font-bold">Stack Play</h1>
+            </div>
+            <a
+              href="index.html"
+              class="min-h-[44px] rounded-2xl border border-muted bg-white px-5 py-2 text-sm font-semibold"
+            >
+              Back to Mode Select
+            </a>
+          </div>
+        </header>
+
+        <section class="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+          <div class="flex flex-col gap-4">
+            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
+              <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                  <div class="rounded-2xl bg-slate-50 px-4 py-2 text-sm font-semibold">
+                    Floor <span id="floorCount">1</span>
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <div class="text-xs font-semibold text-slate-500">안정도</div>
+                    <div class="h-3 w-44 overflow-hidden rounded-full bg-muted">
+                      <div
+                        id="stabilityFill"
+                        class="h-full rounded-full bg-accent transition"
+                        style="width: 100%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-4 text-sm font-semibold text-slate-600">
+                  <div
+                    id="missionText"
+                    class="hidden rounded-full bg-accent/10 px-3 py-1 text-accentStrong"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tower-area" id="towerArea">
+              <div
+                id="floatingBlock"
+                class="block bg-accent"
+                style="top: 32px; left: 50%; width: 240px"
+              >
+                ♩
+              </div>
+              <div id="towerBase"></div>
+              <div
+                id="resultBanner"
+                class="pointer-events-none absolute left-1/2 top-6 hidden -translate-x-1/2 rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold text-white"
+              ></div>
+            </div>
+
+            <p id="tapHint" class="text-center text-sm font-semibold text-slate-500">
+              화면을 탭하여 블록을 놓아주세요.
+            </p>
+          </div>
+
+          <aside class="flex flex-col gap-4">
+            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold">음 패널</h2>
+                <span
+                  id="soundStatus"
+                  class="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-500"
+                >
+                  Sound OFF
+                </span>
+              </div>
+              <div id="toneSelector" class="mt-4 hidden">
+                <p class="text-xs font-semibold text-slate-500">블록 선택</p>
+                <div class="mt-2 grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    class="tone-button min-h-[44px] rounded-xl border border-muted bg-white text-sm font-semibold"
+                    data-tone="A"
+                  >
+                    A
+                  </button>
+                  <button
+                    type="button"
+                    class="tone-button min-h-[44px] rounded-xl border border-muted bg-white text-sm font-semibold"
+                    data-tone="B"
+                  >
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    class="tone-button min-h-[44px] rounded-xl border border-muted bg-white text-sm font-semibold"
+                    data-tone="C"
+                  >
+                    C
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-4 rounded-2xl bg-slate-50 p-4">
+                <p class="text-xs font-semibold text-slate-500">누적 음</p>
+                <div id="toneHistory" class="mt-3 grid grid-cols-6 gap-2 text-center text-xs"></div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
+              <h3 class="text-lg font-semibold">미션 예시</h3>
+              <ul class="mt-3 space-y-2 text-sm text-slate-600" id="missionExamples"></ul>
+            </div>
+
+            <div class="rounded-2xl bg-white p-5 shadow-soft border border-muted">
+              <h3 class="text-lg font-semibold">설정값</h3>
+              <ul class="mt-3 space-y-2 text-sm text-slate-600" id="settingsList"></ul>
+            </div>
+          </aside>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const gradeStyles = {
+        low: { accent: "120 213 111", strong: "34 197 94" },
+        mid: { accent: "78 156 255", strong: "37 99 235" },
+        high: { accent: "244 124 255", strong: "217 70 239" }
+      };
+
+      const toneStyles = {
+        A: { color: "toneA", icon: "♪", freq: 440 },
+        B: { color: "toneB", icon: "♬", freq: 523.25 },
+        C: { color: "toneC", icon: "♫", freq: 659.25 }
+      };
+
+      const missionSets = {
+        low: [
+          {
+            id: "low-stack-6",
+            title: "6층 쌓기",
+            description: "정확하게 6층을 만들어 보세요."
+          },
+          {
+            id: "low-steady-5",
+            title: "흔들림 없이 5층 유지",
+            description: "흔들림 없이 5층까지 쌓아요."
+          }
+        ],
+        mid: [
+          {
+            id: "mid-balance-7",
+            title: "7층 균형 쌓기",
+            description: "안정도 60 이상을 유지하세요."
+          },
+          {
+            id: "mid-stack-8",
+            title: "8층 쌓기",
+            description: "정확하게 8층을 완성하세요."
+          }
+        ],
+        high: [
+          {
+            id: "high-bright-8",
+            title: "밝은 화음으로 8층 쌓기",
+            description: "A/B/C 중 2개 이상 음으로 8층."
+          },
+          {
+            id: "high-mono-10",
+            title: "단화음만 사용해서 타워 완성",
+            description: "한 가지 음만으로 10층을 쌓아요."
+          }
+        ]
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const grade = params.get("grade") || "mid";
+      const mission = params.get("mission") === "1";
+      const sound = params.get("sound") !== "0";
+      const classmode = params.get("classmode") === "1";
+
+      const palette = gradeStyles[grade] || gradeStyles.mid;
+      document.documentElement.style.setProperty("--color-accent", palette.accent);
+      document.documentElement.style.setProperty(
+        "--color-accent-strong",
+        palette.strong
+      );
+
+      const settingsList = document.getElementById("settingsList");
+      settingsList.innerHTML = `
+        <li>학년 모드: <strong>${grade}</strong></li>
+        <li>미션: <strong>${mission ? "ON" : "OFF"}</strong></li>
+        <li>시간: <strong>사용 안 함</strong></li>
+        <li>사운드: <strong>${sound ? "ON" : "OFF"}</strong></li>
+        <li>수업용 모드: <strong>${classmode ? "ON" : "OFF"}</strong></li>
+      `;
+
+      const floorCount = document.getElementById("floorCount");
+      const stabilityFill = document.getElementById("stabilityFill");
+      const towerArea = document.getElementById("towerArea");
+      const floatingBlock = document.getElementById("floatingBlock");
+      const towerBase = document.getElementById("towerBase");
+      const resultBanner = document.getElementById("resultBanner");
+      const missionText = document.getElementById("missionText");
+      const missionExamples = document.getElementById("missionExamples");
+      const tapHint = document.getElementById("tapHint");
+      const soundStatus = document.getElementById("soundStatus");
+      const toneHistory = document.getElementById("toneHistory");
+      const toneSelector = document.getElementById("toneSelector");
+      const toneButtons = Array.from(document.querySelectorAll(".tone-button"));
+
+      const state = {
+        floor: 1,
+        stability: 100,
+        blockWidth: 240,
+        currentX: 0,
+        direction: 1,
+        speed: 1.8,
+        prevX: null,
+        selectedTone: "A",
+        missionCompleted: false,
+        missionFailed: false,
+        shakeCount: 0,
+        usedTones: new Set()
+      };
+
+      let animationId;
+
+      const activeMissions = missionSets[grade] || missionSets.mid;
+      const activeMission = activeMissions[0];
+
+      function updateMissionText() {
+        if (!mission || !activeMission) return;
+        missionText.textContent = activeMission.title;
+        missionText.classList.remove("hidden");
+      }
+
+      function renderMissionExamples() {
+        const items = activeMissions
+          .map((item) => `<li><strong>${item.title}</strong> - ${item.description}</li>`)
+          .join("");
+        missionExamples.innerHTML = items;
+      }
+
+      function updateSoundStatus() {
+        soundStatus.textContent = sound ? "Sound ON" : "Sound OFF";
+        soundStatus.classList.toggle("bg-accent/10", sound);
+        soundStatus.classList.toggle("text-accentStrong", sound);
+      }
+
+      function updateHint() {
+        tapHint.textContent = classmode ? "탭하여 놓기" : "화면을 탭하여 블록을 놓아주세요.";
+      }
+
+      function updateToneSelector() {
+        if (grade === "high") {
+          toneSelector.classList.remove("hidden");
+        } else {
+          toneSelector.classList.add("hidden");
+        }
+        toneButtons.forEach((button) => {
+          const isActive = button.dataset.tone === state.selectedTone;
+          button.classList.toggle("bg-accent", isActive);
+          button.classList.toggle("text-white", isActive);
+          button.classList.toggle("border-accentStrong", isActive);
+        });
+      }
+
+      function updateFloatingBlockTone() {
+        const tone = toneStyles[state.selectedTone];
+        floatingBlock.textContent = tone.icon;
+        floatingBlock.classList.remove("bg-toneA", "bg-toneB", "bg-toneC");
+        floatingBlock.classList.add(`bg-${tone.color}`);
+      }
+
+      let audioContext;
+
+      function ensureAudioContext() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === "suspended") {
+          audioContext.resume();
+        }
+      }
+
+      function playTone(toneKey) {
+        if (!sound) return;
+        ensureAudioContext();
+        const tone = toneStyles[toneKey];
+        if (!tone || !audioContext) return;
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = tone.freq;
+        gain.gain.value = 0;
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        const now = audioContext.currentTime;
+        gain.gain.linearRampToValueAtTime(0.25, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        oscillator.start(now);
+        oscillator.stop(now + 0.3);
+      }
+
+      function addToneHistory() {
+        const tone = toneStyles[state.selectedTone];
+        const chip = document.createElement("div");
+        chip.className = `rounded-lg py-2 text-white font-semibold bg-${tone.color}`;
+        chip.textContent = tone.icon;
+        toneHistory.prepend(chip);
+        state.usedTones.add(state.selectedTone);
+      }
+
+      function updateStability(delta) {
+        state.stability = Math.max(0, state.stability - delta);
+        stabilityFill.style.width = `${state.stability}%`;
+        if (state.stability < 35 && !state.missionFailed) {
+          resultBanner.textContent = "미션 실패";
+          resultBanner.classList.remove("hidden");
+          state.missionFailed = true;
+        }
+      }
+
+      function showBanner(text, confetti) {
+        resultBanner.textContent = text;
+        resultBanner.classList.remove("hidden");
+        if (confetti) {
+          resultBanner.classList.add("confetti");
+        } else {
+          resultBanner.classList.remove("confetti");
+        }
+      }
+
+      function checkMission() {
+        if (!mission || state.missionCompleted || !activeMission) return;
+        const tonesUsed = state.usedTones.size;
+        const floor = state.floor;
+        if (activeMission.id === "low-stack-6" && floor >= 6) {
+          state.missionCompleted = true;
+        }
+        if (activeMission.id === "low-steady-5" && floor >= 5 && state.shakeCount === 0) {
+          state.missionCompleted = true;
+        }
+        if (activeMission.id === "mid-balance-7" && floor >= 7 && state.stability >= 60) {
+          state.missionCompleted = true;
+        }
+        if (activeMission.id === "mid-stack-8" && floor >= 8) {
+          state.missionCompleted = true;
+        }
+        if (activeMission.id === "high-bright-8" && floor >= 8 && tonesUsed >= 2) {
+          state.missionCompleted = true;
+        }
+        if (activeMission.id === "high-mono-10" && floor >= 10 && tonesUsed === 1) {
+          state.missionCompleted = true;
+        }
+        if (state.missionCompleted) {
+          showBanner("미션 성공", true);
+        }
+      }
+
+      function updateFloor() {
+        floorCount.textContent = state.floor;
+      }
+
+      function setFloatingBlockPosition(x) {
+        const towerWidth = towerArea.clientWidth;
+        const maxX = towerWidth - state.blockWidth;
+        state.currentX = Math.max(0, Math.min(x, maxX));
+        floatingBlock.style.left = `${state.currentX}px`;
+        floatingBlock.style.width = `${state.blockWidth}px`;
+      }
+
+      function animate() {
+        const towerWidth = towerArea.clientWidth;
+        const maxX = towerWidth - state.blockWidth;
+        let nextX = state.currentX + state.direction * state.speed;
+        if (nextX <= 0 || nextX >= maxX) {
+          state.direction *= -1;
+          nextX = Math.max(0, Math.min(nextX, maxX));
+        }
+        setFloatingBlockPosition(nextX);
+        animationId = requestAnimationFrame(animate);
+      }
+
+      function placeBlock() {
+        if (state.blockWidth <= 40) {
+          showBanner("미션 실패", false);
+        }
+        const towerWidth = towerArea.clientWidth;
+        const maxX = towerWidth - state.blockWidth;
+        let targetX = state.currentX;
+        if (grade === "low" && state.prevX !== null) {
+          const center = state.prevX + state.blockWidth / 2;
+          const currentCenter = targetX + state.blockWidth / 2;
+          const snappedCenter = currentCenter + (center - currentCenter) * 0.5;
+          targetX = snappedCenter - state.blockWidth / 2;
+          targetX = Math.max(0, Math.min(targetX, maxX));
+        }
+
+        const prevCenter = state.prevX !== null ? state.prevX + state.blockWidth / 2 : targetX + state.blockWidth / 2;
+        const currentCenter = targetX + state.blockWidth / 2;
+        const offset = Math.abs(currentCenter - prevCenter);
+        const shrink = Math.min(state.blockWidth * 0.6, offset);
+        state.blockWidth = Math.max(36, state.blockWidth - shrink);
+        updateStability(Math.round(offset / 4));
+
+        if (offset > 40) {
+          towerArea.classList.add("shake");
+          state.shakeCount += 1;
+          setTimeout(() => towerArea.classList.remove("shake"), 600);
+        }
+
+        const stackedBlock = document.createElement("div");
+        stackedBlock.className = `block bg-${toneStyles[state.selectedTone].color}`;
+        stackedBlock.style.width = `${state.blockWidth}px`;
+        stackedBlock.style.left = `${targetX}px`;
+        stackedBlock.style.bottom = `${(state.floor - 1) * 40 + 12}px`;
+        stackedBlock.textContent = toneStyles[state.selectedTone].icon;
+        towerBase.appendChild(stackedBlock);
+
+        state.prevX = targetX;
+        state.floor += 1;
+        updateFloor();
+        addToneHistory();
+        playTone(state.selectedTone);
+        checkMission();
+      }
+
+      function handleTap() {
+        placeBlock();
+        setFloatingBlockPosition(state.currentX);
+      }
+
+      towerArea.addEventListener("click", handleTap);
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          event.preventDefault();
+          handleTap();
+        }
+      });
+
+      toneButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          state.selectedTone = button.dataset.tone;
+          updateToneSelector();
+          updateFloatingBlockTone();
+        });
+      });
+
+      updateMissionText();
+      renderMissionExamples();
+      updateSoundStatus();
+      updateHint();
+      updateToneSelector();
+      updateFloatingBlockTone();
+      setFloatingBlockPosition(towerArea.clientWidth / 2 - state.blockWidth / 2);
+      updateFloor();
+      animationId = requestAnimationFrame(animate);
+    </script>
+  </body>
 </html>
