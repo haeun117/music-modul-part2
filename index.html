@@ -1,167 +1,360 @@
 <!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Harmony Stack – Mode Select</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-slate-50">
-  <main class="max-w-4xl mx-auto p-5 space-y-5">
-    <header class="space-y-2">
-      <h1 class="text-2xl font-bold">Harmony Stack</h1>
-      <p class="text-slate-600">학년 모드를 고르고 시작해보자.</p>
-    </header>
-
-    <section class="grid md:grid-cols-3 gap-4" id="gradeCards">
-      <button data-grade="low" class="grade-card rounded-2xl border bg-white p-4 text-left shadow-sm hover:shadow">
-        <div class="h-16 w-full rounded-xl bg-slate-100 flex items-end p-2">
-          <div class="flex gap-1">
-            <div class="h-8 w-4 rounded bg-slate-300"></div>
-            <div class="h-10 w-4 rounded bg-slate-300"></div>
-            <div class="h-12 w-4 rounded bg-slate-300"></div>
-          </div>
-        </div>
-        <h2 class="mt-3 font-semibold">저학년 (초1–2)</h2>
-        <ul class="mt-2 text-sm text-slate-600 space-y-1">
-          <li>조작: 자동 보정</li>
-          <li>개념: 느낌 중심</li>
-          <li>실패: 없음</li>
-        </ul>
-      </button>
-
-      <button data-grade="mid" class="grade-card rounded-2xl border bg-white p-4 text-left shadow-sm hover:shadow">
-        <div class="h-16 w-full rounded-xl bg-slate-100 flex items-end p-2">
-          <div class="flex gap-1">
-            <div class="h-7 w-4 rounded bg-slate-300"></div>
-            <div class="h-9 w-4 rounded bg-slate-300"></div>
-            <div class="h-11 w-4 rounded bg-slate-300"></div>
-          </div>
-        </div>
-        <h2 class="mt-3 font-semibold">중학년 (초3–4)</h2>
-        <ul class="mt-2 text-sm text-slate-600 space-y-1">
-          <li>조작: 수동 정렬</li>
-          <li>개념: 어울림 구분</li>
-          <li>실패: 게임오버 없음</li>
-        </ul>
-      </button>
-
-      <button data-grade="high" class="grade-card rounded-2xl border bg-white p-4 text-left shadow-sm hover:shadow">
-        <div class="h-16 w-full rounded-xl bg-slate-100 flex items-end p-2">
-          <div class="flex gap-1">
-            <div class="h-6 w-4 rounded bg-slate-300"></div>
-            <div class="h-8 w-4 rounded bg-slate-300"></div>
-            <div class="h-10 w-4 rounded bg-slate-300"></div>
-          </div>
-        </div>
-        <h2 class="mt-3 font-semibold">고학년 (초5–6)</h2>
-        <ul class="mt-2 text-sm text-slate-600 space-y-1">
-          <li>조작: 수동 + 선택</li>
-          <li>개념: 용어 일부</li>
-          <li>실패: 조건 실패</li>
-        </ul>
-      </button>
-    </section>
-
-    <section class="rounded-2xl border bg-white p-4 shadow-sm space-y-4">
-      <div class="flex items-center justify-between">
-        <span class="font-medium">미션</span>
-        <button id="missionBtn" class="px-4 py-2 rounded-xl border bg-white">OFF</button>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <span class="font-medium">시간</span>
-        <div class="flex gap-2" id="timeGroup">
-          <button data-time="5" class="time-btn px-3 py-2 rounded-xl border bg-white">5분</button>
-          <button data-time="10" class="time-btn px-3 py-2 rounded-xl border bg-white">10분</button>
-          <button data-time="15" class="time-btn px-3 py-2 rounded-xl border bg-white">15분</button>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <span class="font-medium">사운드</span>
-        <button id="soundBtn" class="px-4 py-2 rounded-xl border bg-white">ON</button>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <span class="font-medium">수업용 모드</span>
-        <button id="classBtn" class="px-4 py-2 rounded-xl border bg-white">OFF</button>
-      </div>
-
-      <button id="startBtn" class="w-full py-4 rounded-2xl bg-black text-white text-lg font-semibold">
-        시작하기
-      </button>
-
-      <p id="hint" class="text-sm text-slate-600">
-        팁: 카드를 눌러 학년을 선택한 뒤 시작을 눌러요.
-      </p>
-    </section>
-  </main>
-
-<script>
-  let state = { grade: "low", mission: 0, time: 10, sound: 1, classmode: 0 };
-
-  const setSelectedCard = () => {
-    document.querySelectorAll(".grade-card").forEach(btn => {
-      const on = btn.dataset.grade === state.grade;
-      btn.classList.toggle("ring-2", on);
-      btn.classList.toggle("ring-black", on);
-    });
-  };
-
-  document.getElementById("gradeCards").addEventListener("click", (e) => {
-    const btn = e.target.closest(".grade-card");
-    if (!btn) return;
-    state.grade = btn.dataset.grade;
-    setSelectedCard();
-  });
-
-  const toggleBtn = (id, key) => {
-    const el = document.getElementById(id);
-    el.addEventListener("click", () => {
-      state[key] = state[key] ? 0 : 1;
-      el.textContent = state[key] ? "ON" : "OFF";
-      if (key === "classmode") {
-        document.getElementById("hint").textContent = state.classmode
-          ? "카드 선택 → 시작!"
-          : "팁: 카드를 눌러 학년을 선택한 뒤 시작을 눌러요.";
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Harmony Stack | Mode Select</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            borderRadius: {
+              "2xl": "1.25rem"
+            },
+            boxShadow: {
+              soft: "0 8px 24px -12px rgba(15, 23, 42, 0.35)",
+              lift: "0 14px 32px -18px rgba(30, 41, 59, 0.45)"
+            },
+            colors: {
+              ink: "rgb(var(--color-ink) / <alpha-value>)",
+              surface: "rgb(var(--color-surface) / <alpha-value>)",
+              muted: "rgb(var(--color-muted) / <alpha-value>)",
+              accent: "rgb(var(--color-accent) / <alpha-value>)",
+              accentStrong: "rgb(var(--color-accent-strong) / <alpha-value>)"
+            },
+            fontFamily: {
+              sans: ["'Pretendard'", "'Inter'", "system-ui", "sans-serif"]
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+        --color-ink: 15 23 42;
+        --color-surface: 248 250 252;
+        --color-muted: 226 232 240;
+        --color-accent: 78 156 255;
+        --color-accent-strong: 37 99 235;
       }
-    });
-  };
 
-  toggleBtn("missionBtn", "mission");
-  toggleBtn("soundBtn", "sound");
-  toggleBtn("classBtn", "classmode");
+      * {
+        box-sizing: border-box;
+      }
 
-  document.getElementById("timeGroup").addEventListener("click", (e) => {
-    const btn = e.target.closest(".time-btn");
-    if (!btn) return;
-    state.time = Number(btn.dataset.time);
-    document.querySelectorAll(".time-btn").forEach(b => {
-      const on = Number(b.dataset.time) === state.time;
-      b.classList.toggle("bg-black", on);
-      b.classList.toggle("text-white", on);
-      b.classList.toggle("border-black", on);
-    });
-  });
+      body {
+        margin: 0;
+        font-family: "Pretendard", "Inter", system-ui, sans-serif;
+        background: rgb(var(--color-surface));
+        color: rgb(var(--color-ink));
+        min-height: 100vh;
+      }
 
-  document.getElementById("startBtn").addEventListener("click", () => {
-    const qs = new URLSearchParams({
-      grade: state.grade,
-      mission: String(state.mission),
-      time: String(state.time),
-      sound: String(state.sound),
-      classmode: String(state.classmode),
-    });
-    location.href = "./play.html?" + qs.toString();
-  });
+      .grade-card[data-selected="true"] {
+        border-color: rgb(var(--color-accent-strong));
+        box-shadow: 0 16px 32px -18px rgba(37, 99, 235, 0.45);
+      }
 
-  // init
-  setSelectedCard();
-  document.querySelector('[data-time="10"]').click();
-  document.getElementById("soundBtn").textContent = "ON";
-  document.getElementById("missionBtn").textContent = "OFF";
-  document.getElementById("classBtn").textContent = "OFF";
-</script>
-</body>
+      .grade-card[data-selected="true"] .grade-pill {
+        background: rgb(var(--color-accent) / 0.2);
+        color: rgb(var(--color-accent-strong));
+      }
+    </style>
+  </head>
+  <body>
+    <main class="min-h-screen bg-surface px-6 py-10">
+      <div class="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <header class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-500">Harmony Stack</p>
+            <h1 class="text-3xl font-bold">Mode Select</h1>
+          </div>
+          <div class="flex items-center gap-3 rounded-full bg-white px-4 py-2 text-sm shadow-soft">
+            <span class="h-3 w-3 rounded-full bg-accent"></span>
+            Ketchapp 감성 미니멀 스택 UI
+          </div>
+        </header>
+
+        <section class="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <div class="flex flex-col gap-6">
+            <div class="rounded-2xl bg-white p-6 shadow-soft border border-muted">
+              <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 class="text-2xl font-semibold">학년 모드 선택</h2>
+                  <p class="text-sm text-slate-500">
+                    선택된 모드만 accent 컬러가 강조됩니다.
+                  </p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-sm text-slate-500">Stack Illust</span>
+                  <div class="flex flex-col items-end gap-1">
+                    <div class="h-3 w-12 rounded-full bg-slate-200"></div>
+                    <div class="h-3 w-16 rounded-full bg-slate-300"></div>
+                    <div class="h-3 w-20 rounded-full bg-slate-400"></div>
+                    <div class="h-3 w-24 rounded-full bg-accent"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6 grid gap-4 md:grid-cols-3" id="gradeCards">
+                <button
+                  type="button"
+                  data-grade="low"
+                  class="grade-card flex min-h-[44px] flex-col gap-3 rounded-2xl border border-muted bg-slate-50 p-4 text-left transition"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="text-lg font-semibold">저학년</span>
+                    <span class="grade-pill rounded-full px-2 py-1 text-xs font-semibold">Easy</span>
+                  </div>
+                  <ul class="text-xs text-slate-500 space-y-1">
+                    <li>조작: 터치 한 번</li>
+                    <li>개념노출: 리듬 패턴 1종</li>
+                    <li>실패여부: 실패 없음</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  data-grade="mid"
+                  class="grade-card flex min-h-[44px] flex-col gap-3 rounded-2xl border border-muted bg-slate-50 p-4 text-left transition"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="text-lg font-semibold">중학년</span>
+                    <span class="grade-pill rounded-full px-2 py-1 text-xs font-semibold">Medium</span>
+                  </div>
+                  <ul class="text-xs text-slate-500 space-y-1">
+                    <li>조작: 스와이프 + 탭</li>
+                    <li>개념노출: 리듬 + 박자</li>
+                    <li>실패여부: 1회 재도전</li>
+                  </ul>
+                </button>
+                <button
+                  type="button"
+                  data-grade="high"
+                  class="grade-card flex min-h-[44px] flex-col gap-3 rounded-2xl border border-muted bg-slate-50 p-4 text-left transition"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="text-lg font-semibold">고학년</span>
+                    <span class="grade-pill rounded-full px-2 py-1 text-xs font-semibold">Hard</span>
+                  </div>
+                  <ul class="text-xs text-slate-500 space-y-1">
+                    <li>조작: 드래그 &amp; 홀드</li>
+                    <li>개념노출: 리듬 + 화성</li>
+                    <li>실패여부: 실패 기록</li>
+                  </ul>
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="rounded-2xl bg-white p-6 shadow-soft border border-muted"
+              id="settingsPanel"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xl font-semibold">설정</h3>
+                  <p class="text-sm text-slate-500">
+                    미션과 사운드를 조정하세요.
+                  </p>
+                </div>
+                <label class="flex items-center gap-3 text-sm font-semibold">
+                  <span>수업용 모드</span>
+                  <button
+                    type="button"
+                    id="classModeToggle"
+                    aria-pressed="false"
+                    class="relative inline-flex min-h-[44px] w-16 items-center rounded-full border border-muted bg-white px-1"
+                  >
+                    <span
+                      class="inline-block h-7 w-7 rounded-full bg-accent shadow-soft transition"
+                      id="classModeKnob"
+                    ></span>
+                  </button>
+                </label>
+              </div>
+              <p
+                class="mt-3 hidden text-sm font-semibold text-accentStrong"
+                id="classModeHint"
+              >
+                학생 안내: “블록이 흔들리면 박자에 맞춰 눌러주세요.”
+              </p>
+
+              <div class="mt-6 grid gap-4 md:grid-cols-2">
+                <div class="rounded-2xl border border-muted bg-slate-50 p-4">
+                  <p class="text-sm font-semibold text-slate-500">미션</p>
+                  <button
+                    type="button"
+                    id="missionToggle"
+                    aria-pressed="false"
+                    class="mt-3 flex min-h-[44px] w-full items-center justify-between rounded-full border border-muted bg-white px-4 text-sm font-semibold"
+                  >
+                    <span>비활성</span>
+                    <span class="rounded-full bg-muted px-2 py-1 text-xs">OFF</span>
+                  </button>
+                </div>
+                <div class="rounded-2xl border border-muted bg-slate-50 p-4">
+                  <p class="text-sm font-semibold text-slate-500">사운드</p>
+                  <button
+                    type="button"
+                    id="soundToggle"
+                    aria-pressed="true"
+                    class="mt-3 flex min-h-[44px] w-full items-center justify-between rounded-full border border-muted bg-white px-4 text-sm font-semibold"
+                  >
+                    <span>활성</span>
+                    <span class="rounded-full bg-accent/20 px-2 py-1 text-xs text-accentStrong">
+                      ON
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="flex flex-col gap-6">
+            <div class="rounded-2xl bg-white p-6 shadow-soft border border-muted">
+              <h3 class="text-xl font-semibold">미리보기</h3>
+              <p class="mt-2 text-sm text-slate-500">
+                현재 선택된 모드와 설정값을 확인하세요.
+              </p>
+              <div class="mt-4 rounded-2xl border border-muted bg-slate-50 p-4">
+                <ul class="space-y-2 text-sm text-slate-600" id="previewList"></ul>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="startButton"
+              class="min-h-[56px] rounded-2xl bg-accent px-6 text-lg font-semibold text-white shadow-lift transition hover:bg-accentStrong"
+            >
+              시작하기
+            </button>
+          </aside>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const gradeStyles = {
+        low: {
+          accent: "120 213 111",
+          strong: "34 197 94"
+        },
+        mid: {
+          accent: "78 156 255",
+          strong: "37 99 235"
+        },
+        high: {
+          accent: "244 124 255",
+          strong: "217 70 239"
+        }
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const state = {
+        grade: params.get("grade") || "mid",
+        mission: params.get("mission") === "1",
+        time: 0,
+        sound: params.get("sound") !== "0",
+        classmode: params.get("classmode") === "1"
+      };
+
+      const gradeCards = Array.from(document.querySelectorAll("#gradeCards button"));
+      const previewList = document.getElementById("previewList");
+      const missionToggle = document.getElementById("missionToggle");
+      const soundToggle = document.getElementById("soundToggle");
+      const startButton = document.getElementById("startButton");
+      const classModeToggle = document.getElementById("classModeToggle");
+      const classModeKnob = document.getElementById("classModeKnob");
+      const classModeHint = document.getElementById("classModeHint");
+      const settingsPanel = document.getElementById("settingsPanel");
+
+      function applyAccent() {
+        const palette = gradeStyles[state.grade];
+        document.documentElement.style.setProperty("--color-accent", palette.accent);
+        document.documentElement.style.setProperty(
+          "--color-accent-strong",
+          palette.strong
+        );
+      }
+
+      function updateGradeSelection() {
+        gradeCards.forEach((card) => {
+          const selected = card.dataset.grade === state.grade;
+          card.dataset.selected = selected ? "true" : "false";
+        });
+        applyAccent();
+      }
+
+      function updateToggle(button, enabled, labelOn, labelOff) {
+        button.setAttribute("aria-pressed", String(enabled));
+        const label = enabled ? labelOn : labelOff;
+        const badge = enabled
+          ? `<span class="rounded-full bg-accent/20 px-2 py-1 text-xs text-accentStrong">ON</span>`
+          : `<span class="rounded-full bg-muted px-2 py-1 text-xs">OFF</span>`;
+        button.innerHTML = `<span>${label}</span>${badge}`;
+      }
+
+      function updateClassMode() {
+        classModeToggle.setAttribute("aria-pressed", String(state.classmode));
+        classModeKnob.classList.toggle("translate-x-8", state.classmode);
+        classModeHint.classList.toggle("hidden", !state.classmode);
+        settingsPanel.classList.toggle("sticky", state.classmode);
+        settingsPanel.classList.toggle("top-6", state.classmode);
+      }
+
+      function updatePreview() {
+        previewList.innerHTML = `
+          <li>학년 모드: <strong>${state.grade}</strong></li>
+          <li>미션: <strong>${state.mission ? "ON" : "OFF"}</strong></li>
+          <li>시간: <strong>사용 안 함</strong></li>
+          <li>사운드: <strong>${state.sound ? "ON" : "OFF"}</strong></li>
+          <li>수업용 모드: <strong>${state.classmode ? "ON" : "OFF"}</strong></li>
+        `;
+      }
+
+      gradeCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          state.grade = card.dataset.grade;
+          updateGradeSelection();
+          updatePreview();
+        });
+      });
+
+      missionToggle.addEventListener("click", () => {
+        state.mission = !state.mission;
+        updateToggle(missionToggle, state.mission, "활성", "비활성");
+        updatePreview();
+      });
+
+      soundToggle.addEventListener("click", () => {
+        state.sound = !state.sound;
+        updateToggle(soundToggle, state.sound, "활성", "비활성");
+        updatePreview();
+      });
+
+      classModeToggle.addEventListener("click", () => {
+        state.classmode = !state.classmode;
+        updateClassMode();
+        updatePreview();
+      });
+
+      startButton.addEventListener("click", () => {
+        const query = new URLSearchParams({
+          grade: state.grade,
+          mission: state.mission ? "1" : "0",
+          time: "0",
+          sound: state.sound ? "1" : "0",
+          classmode: state.classmode ? "1" : "0"
+        });
+        window.location.href = `play.html?${query.toString()}`;
+      });
+
+      updateGradeSelection();
+      updateToggle(missionToggle, state.mission, "활성", "비활성");
+      updateToggle(soundToggle, state.sound, "활성", "비활성");
+      updateClassMode();
+      updatePreview();
+    </script>
+  </body>
 </html>
